@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import Settings from './pages/Settings';
 import EditProfile from './pages/EditProfile';
+import Subscription from './pages/Subscription';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/history" element={<History />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/subscription" element={<Subscription />} />
           </Routes>
         </Router>
       </FormProvider>

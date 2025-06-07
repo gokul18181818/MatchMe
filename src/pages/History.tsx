@@ -14,7 +14,11 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Edit3,
+  Save,
+  X,
+  Upload
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
@@ -142,6 +146,30 @@ const StatusBadge = ({ status }: { status: ResumeHistory['status'] }) => {
 };
 
 const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    company: resume.company,
+    position: resume.position,
+    date: resume.date,
+    status: resume.status
+  });
+
+  const handleSave = () => {
+    // Here you would typically save to backend/context
+    console.log('Saving edit data:', editData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditData({
+      company: resume.company,
+      position: resume.position,
+      date: resume.date,
+      status: resume.status
+    });
+    setIsEditing(false);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -150,26 +178,82 @@ const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
       className={cn(
         "p-6 rounded-xl border transition-all duration-300 hover:shadow-lg",
         "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-        "border-gray-200 dark:border-gray-700"
+        "border-gray-200 dark:border-gray-700",
+        isEditing && "border-blue-300 dark:border-blue-600 shadow-lg shadow-blue-500/20"
       )}
     >
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 flex-1">
           <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
             {resume.logo}
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              {resume.position}
-            </h3>
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-2">
-              <Building2 className="w-4 h-4" />
-              <span className="font-medium">{resume.company}</span>
-              <span>•</span>
-              <Calendar className="w-4 h-4" />
-              <span>{new Date(resume.date).toLocaleDateString()}</span>
-            </div>
-            <StatusBadge status={resume.status} />
+          <div className="flex-1">
+            {isEditing ? (
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={editData.position}
+                  onChange={(e) => setEditData({...editData, position: e.target.value})}
+                  className={cn(
+                    "w-full px-3 py-2 rounded-lg border text-lg font-semibold",
+                    "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600",
+                    "text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  )}
+                  placeholder="Position"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={editData.company}
+                    onChange={(e) => setEditData({...editData, company: e.target.value})}
+                    className={cn(
+                      "px-3 py-2 rounded-lg border",
+                      "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600",
+                      "text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    )}
+                    placeholder="Company"
+                  />
+                  <input
+                    type="date"
+                    value={editData.date}
+                    onChange={(e) => setEditData({...editData, date: e.target.value})}
+                    className={cn(
+                      "px-3 py-2 rounded-lg border",
+                      "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600",
+                      "text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    )}
+                  />
+                </div>
+                <select
+                  value={editData.status}
+                  onChange={(e) => setEditData({...editData, status: e.target.value as ResumeHistory['status']})}
+                  className={cn(
+                    "w-full px-3 py-2 rounded-lg border",
+                    "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600",
+                    "text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  )}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="interviewed">Interviewed</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="offer">Offer Received</option>
+                </select>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  {resume.position}
+                </h3>
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-2">
+                  <Building2 className="w-4 h-4" />
+                  <span className="font-medium">{resume.company}</span>
+                  <span>•</span>
+                  <Calendar className="w-4 h-4" />
+                  <span>{new Date(resume.date).toLocaleDateString()}</span>
+                </div>
+                <StatusBadge status={resume.status} />
+              </>
+            )}
           </div>
         </div>
         <div className="text-right">
@@ -188,18 +272,48 @@ const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
-          <Eye className="w-4 h-4 mr-2" />
-          View Resume
-        </Button>
-        <Button className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0">
-          <Download className="w-4 h-4 mr-2" />
-          Download
-        </Button>
-        <Button className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0">
-          <ExternalLink className="w-4 h-4" />
-        </Button>
+      {/* Actions */}
+      <div className="flex flex-wrap gap-2 mt-4">
+        {isEditing ? (
+          <>
+            <Button 
+              onClick={handleSave}
+              className="bg-green-600 hover:bg-green-700 text-white border-0 justify-center py-2.5"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Changes
+            </Button>
+            <Button 
+              onClick={handleCancel}
+              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 justify-center py-2.5"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 border-0 justify-center py-2.5">
+              <Upload className="w-4 h-4 mr-2" />
+              New Resume
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button className="flex-1 justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 py-2.5">
+              <Eye className="w-4 h-4 mr-2" />
+              View Resume
+            </Button>
+            <Button className="justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 py-2.5">
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </Button>
+            <Button 
+              onClick={() => setIsEditing(true)}
+              className="justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 py-2.5"
+            >
+              <Edit3 className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+          </>
+        )}
       </div>
     </motion.div>
   );

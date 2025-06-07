@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard, Crown } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import ThemeToggle from './ThemeToggle';
@@ -29,25 +29,25 @@ const Navigation: React.FC<NavigationProps> = ({
       className="flex items-center justify-between mb-8 relative"
     >
       {/* Left Side - Back Button */}
-      <div className="flex items-center w-1/3">
+      <div className="flex items-center w-1/4">
         {showBackButton && (
           <Link 
             to={backTo} 
             className={cn(
-              "flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300",
+              "flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-300",
               "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
               "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white",
               "border border-white/20 dark:border-white/10"
             )}
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">{backLabel}</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="font-medium text-sm">{backLabel}</span>
           </Link>
         )}
       </div>
       
       {/* Center - FitCheck Logo */}
-      <div className="flex justify-center w-1/3">
+      <div className="flex justify-center w-1/2">
         <Link 
           to="/"
           className="flex items-center space-x-3 hover:opacity-80 transition-all duration-300 group"
@@ -66,35 +66,51 @@ const Navigation: React.FC<NavigationProps> = ({
       </div>
       
       {/* Right Side - Enhanced Navigation */}
-      <div className="flex items-center justify-end space-x-3 w-1/3">
+      <div className="flex items-center justify-end space-x-3 w-1/4">
         {/* Dashboard Button */}
         <Link 
           to="/dashboard" 
           className={cn(
-            "flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-300",
+            "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
             "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
             "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-            "border border-white/20 dark:border-white/10 font-medium",
+            "border border-white/20 dark:border-white/10 font-medium text-sm",
             location.pathname === '/dashboard' && "bg-blue-100/50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600"
           )}
         >
           <LayoutDashboard className="w-4 h-4" />
           <span>Dashboard</span>
         </Link>
-        
+
         {/* Past Resumes Button */}
         <Link 
           to="/history" 
           className={cn(
-            "flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-300",
+            "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
             "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
             "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-            "border border-white/20 dark:border-white/10 font-medium",
+            "border border-white/20 dark:border-white/10 font-medium text-sm",
             location.pathname === '/history' && "bg-blue-100/50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600"
           )}
         >
           <FileText className="w-4 h-4" />
-          <span>Past Resumes</span>
+          <span>Resumes</span>
+        </Link>
+
+        {/* Subscription Button */}
+        <Link 
+          to="/subscription" 
+          className={cn(
+            "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
+            "bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30",
+            "text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100",
+            "border border-purple-300/50 dark:border-purple-600/50 font-medium text-sm",
+            "shadow-lg shadow-purple-500/20",
+            location.pathname === '/subscription' && "bg-purple-100/50 dark:bg-purple-900/30 border-purple-400 dark:border-purple-500"
+          )}
+        >
+          <Crown className="w-4 h-4" />
+          <span>Pro</span>
         </Link>
         
         {/* Profile Dropdown */}
@@ -102,17 +118,17 @@ const Navigation: React.FC<NavigationProps> = ({
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className={cn(
-              "flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-all duration-300",
+              "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
               "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
               "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-              "border border-white/20 dark:border-white/10 font-medium",
+              "border border-white/20 dark:border-white/10 font-medium text-sm",
               isProfileOpen && "bg-white/20 dark:bg-white/10"
             )}
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-sm font-bold text-white">JS</span>
+            <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-xs font-bold text-white">JS</span>
             </div>
-            <span>John Smith</span>
+            <span className="hidden lg:block">John Smith</span>
             <ChevronDown className={cn(
               "w-4 h-4 transition-transform duration-300",
               isProfileOpen && "rotate-180"
@@ -182,17 +198,10 @@ const Navigation: React.FC<NavigationProps> = ({
             )}
           </AnimatePresence>
         </div>
-        
+
+        {/* Theme Toggle */}
         <ThemeToggle />
       </div>
-      
-      {/* Click outside to close dropdown */}
-      {isProfileOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setIsProfileOpen(false)}
-        />
-      )}
     </motion.div>
   );
 };

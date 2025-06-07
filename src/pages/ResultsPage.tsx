@@ -56,33 +56,59 @@ const StatCard = ({
   icon: Icon, 
   title, 
   value, 
-  color 
+  color,
+  tooltip
 }: { 
   icon: any, 
   title: string, 
   value: string | number, 
-  color: string 
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className={cn(
-      "p-4 rounded-lg border transition-all duration-300 text-center",
-      "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-      "border-gray-200 dark:border-gray-700",
-      "hover:shadow-lg"
-    )}
-  >
-    <div className={cn("w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center", color)}>
-      <Icon className="w-5 h-5 text-white" />
+  color: string,
+  tooltip: string
+}) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <div className="relative">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className={cn(
+          "p-4 rounded-lg border transition-all duration-300 text-center cursor-help",
+          "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+          "border-gray-200 dark:border-gray-700",
+          "hover:shadow-lg hover:shadow-blue-500/20 hover:border-blue-300 dark:hover:border-blue-600"
+        )}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        <div className={cn("w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center", color)}>
+          <Icon className="w-5 h-5 text-white" />
+        </div>
+        <h3 className="text-sm font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
+        <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          {value}
+        </p>
+      </motion.div>
+      
+      {/* Tooltip */}
+      {showTooltip && (
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.9 }}
+          transition={{ duration: 0.2 }}
+          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50"
+        >
+          <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg px-3 py-2 shadow-xl max-w-xs text-center">
+            {tooltip}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+          </div>
+        </motion.div>
+      )}
     </div>
-    <h3 className="text-sm font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
-    <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-      {value}
-    </p>
-  </motion.div>
-);
+  );
+};
 
 const ResultsPage: React.FC = () => {
   const { theme } = useTheme();
@@ -173,24 +199,28 @@ const ResultsPage: React.FC = () => {
                 title="Keyword Match" 
                 value="12/12" 
                 color="bg-blue-500"
+                tooltip="How well your resume matches the job's required keywords and skills. Perfect alignment helps you pass ATS filters."
               />
               <StatCard 
                 icon={Zap}
                 title="Readability" 
                 value="A+" 
                 color="bg-purple-500"
+                tooltip="How easy your resume is to scan and understand. Clear formatting and concise language improve readability."
               />
               <StatCard 
                 icon={CheckCircle}
                 title="ATS Score" 
                 value="98%" 
                 color="bg-green-500"
+                tooltip="Applicant Tracking System compatibility. High scores mean your resume won't get filtered out by automated systems."
               />
               <StatCard 
                 icon={Star}
                 title="Impact Factor" 
                 value="9.2/10" 
                 color="bg-cyan-500"
+                tooltip="Measures how compelling your achievements are. Strong action verbs and quantified results boost impact."
               />
             </div>
 

@@ -185,21 +185,21 @@ const Dashboard: React.FC = () => {
                 <Zap className="w-5 h-5 text-blue-500" />
                 Quick Actions
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Link to="/analyze">
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Link to="/analyze" className="w-full">
+                  <Button className="w-full justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 py-3">
                     <FileText className="w-4 h-4 mr-2" />
                     New Analysis
                   </Button>
                 </Link>
-                <Link to="/history">
-                  <Button className="w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0">
+                <Link to="/history" className="w-full">
+                  <Button className="w-full justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 py-3">
                     <BarChart3 className="w-4 h-4 mr-2" />
                     View History
                   </Button>
                 </Link>
-                <Link to="/settings">
-                  <Button className="w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0">
+                <Link to="/settings" className="w-full">
+                  <Button className="w-full justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 py-3">
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </Button>
