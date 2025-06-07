@@ -1,0 +1,11 @@
+# Netlify SPA redirect rules
+# This ensures all routes are handled by React Router
+
+# Handle malformed login URLs specifically
+/login/?/* /login 301!
+
+# Handle auth callback
+/auth/callback /welcome 302!
+
+# Handle all other routes that don't match static files
+/* /index.html 200 
