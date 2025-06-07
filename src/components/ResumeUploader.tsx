@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { GlobalWorkerOptions, getDocument, version as pdfjsVersion } from 'pdfjs-dist';
-import mammoth from 'mammoth';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -54,9 +52,10 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
     try {
       let text = '';
       if (file.type === 'application/pdf') {
-        GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await getDocument({ data: arrayBuffer }).promise;
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
         const pageTexts = await Promise.all(
           Array.from({ length: pdf.numPages }, async (_, i) => {
             const page = await pdf.getPage(i + 1);
@@ -68,6 +67,7 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
         );
         text = pageTexts.join('\n');
       } else {
+        const { default: mammoth } = await import('mammoth');
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
         text = result.value;
