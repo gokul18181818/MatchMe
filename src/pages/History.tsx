@@ -20,6 +20,14 @@ import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
+import {
+  GoogleIcon,
+  MicrosoftIcon,
+  AppleIcon,
+  MetaIcon,
+  NetflixIcon,
+  AmazonIcon,
+} from '../components/CompanyLogos';
 
 interface ResumeHistory {
   id: string;
@@ -29,7 +37,7 @@ interface ResumeHistory {
   status: 'pending' | 'interviewed' | 'rejected' | 'offer';
   score: number;
   improvement: number;
-  logo: string;
+  logo: React.ReactNode;
 }
 
 const mockHistory: ResumeHistory[] = [
@@ -41,7 +49,7 @@ const mockHistory: ResumeHistory[] = [
     status: 'interviewed',
     score: 92,
     improvement: 27,
-    logo: '🅶'
+    logo: <GoogleIcon className="w-6 h-6" />
   },
   {
     id: '2',
@@ -51,7 +59,7 @@ const mockHistory: ResumeHistory[] = [
     status: 'pending',
     score: 89,
     improvement: 23,
-    logo: 'Ⓜ️'
+    logo: <MicrosoftIcon className="w-6 h-6" />
   },
   {
     id: '3',
@@ -61,7 +69,7 @@ const mockHistory: ResumeHistory[] = [
     status: 'offer',
     score: 95,
     improvement: 31,
-    logo: '🍎'
+    logo: <AppleIcon className="w-6 h-6" />
   },
   {
     id: '4',
@@ -71,7 +79,7 @@ const mockHistory: ResumeHistory[] = [
     status: 'rejected',
     score: 78,
     improvement: 15,
-    logo: 'Ⓜ️'
+    logo: <MetaIcon className="w-6 h-6" />
   },
   {
     id: '5',
@@ -81,7 +89,7 @@ const mockHistory: ResumeHistory[] = [
     status: 'interviewed',
     score: 88,
     improvement: 25,
-    logo: 'Ⓝ'
+    logo: <NetflixIcon className="w-6 h-6" />
   },
   {
     id: '6',
@@ -91,7 +99,7 @@ const mockHistory: ResumeHistory[] = [
     status: 'pending',
     score: 85,
     improvement: 20,
-    logo: '🅰️'
+    logo: <AmazonIcon className="w-6 h-6" />
   }
 ];
 
@@ -147,7 +155,7 @@ const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-lg font-bold">
+          <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
             {resume.logo}
           </div>
           <div>
