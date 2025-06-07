@@ -48,11 +48,15 @@ export interface ResumeMatchResult {
 export interface AnalysisHistory {
   id: string;
   user_id: string;
-  resume_id: string;
-  job_posting_id: string;
+  resume_id: string | null;
+  job_posting_id: string | null;
   analysis_result: JobAnalysisResult;
   match_result: ResumeMatchResult;
+  session_id?: string;
+  analysis_type?: 'job_match' | 'resume_optimization' | 'ats_check';
+  status?: 'processing' | 'completed' | 'failed';
   created_at: string;
+  updated_at: string;
 }
 
 // Clean and extract JSON from mixed response
@@ -303,8 +307,8 @@ export const getAnalysisHistory = async (userId: string): Promise<AnalysisHistor
       .from('analysis_history')
       .select(`
         *,
-        resumes(name),
-        job_postings(title, company)
+        resumes(title),
+        job_postings(title, company, job_title, company_name)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -337,7 +341,7 @@ export const performCompleteAnalysis = async (
 
     const { data: jobPosting } = await supabase
       .from('job_postings')
-      .select('description')
+      .select('description, job_description')
       .eq('id', jobPostingId)
       .single();
 
@@ -345,9 +349,10 @@ export const performCompleteAnalysis = async (
       throw new Error('Resume or job posting not found');
     }
 
-    // Perform analysis
-    const analysis = await analyzeJobPosting(jobPosting.description);
-    const match = await matchResumeToJob(resume.resume_text, jobPosting.description);
+    // Perform analysis (use description if available, otherwise job_description)
+    const jobDesc = jobPosting.description || jobPosting.job_description;
+    const analysis = await analyzeJobPosting(jobDesc);
+    const match = await matchResumeToJob(resume.resume_text, jobDesc);
 
     // Save results
     const saved = await saveAnalysis(userId, resumeId, jobPostingId, analysis, match);

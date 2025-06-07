@@ -7,7 +7,7 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Database types (we'll generate these properly later)
+// Database types (updated to match current schema)
 export type Database = {
   public: {
     Tables: {
@@ -119,6 +119,127 @@ export type Database = {
           is_active?: boolean;
           status?: 'uploaded' | 'processing' | 'optimized' | 'error';
           analysis_score?: number | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+      };
+      job_postings: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          company_name: string | null;
+          job_title: string;
+          job_url: string | null;
+          job_description: string;
+          requirements: any | null;
+          scraped_content: string | null;
+          keywords: any | null;
+          salary_range: string | null;
+          location: string | null;
+          posted_date: string | null;
+          created_at: string | null;
+          // New compatibility fields
+          title: string | null;
+          company: string | null;
+          description: string | null;
+          benefits: any | null;
+          employment_type: string | null;
+          experience_level: string | null;
+          remote_type: string | null;
+          application_deadline: string | null;
+          scraped_data: any | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          company_name?: string | null;
+          job_title: string;
+          job_url?: string | null;
+          job_description: string;
+          requirements?: any | null;
+          scraped_content?: string | null;
+          keywords?: any | null;
+          salary_range?: string | null;
+          location?: string | null;
+          posted_date?: string | null;
+          created_at?: string | null;
+          // New compatibility fields
+          title?: string | null;
+          company?: string | null;
+          description?: string | null;
+          benefits?: any | null;
+          employment_type?: string | null;
+          experience_level?: string | null;
+          remote_type?: string | null;
+          application_deadline?: string | null;
+          scraped_data?: any | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          company_name?: string | null;
+          job_title?: string;
+          job_url?: string | null;
+          job_description?: string;
+          requirements?: any | null;
+          scraped_content?: string | null;
+          keywords?: any | null;
+          salary_range?: string | null;
+          location?: string | null;
+          posted_date?: string | null;
+          created_at?: string | null;
+          // New compatibility fields
+          title?: string | null;
+          company?: string | null;
+          description?: string | null;
+          benefits?: any | null;
+          employment_type?: string | null;
+          experience_level?: string | null;
+          remote_type?: string | null;
+          application_deadline?: string | null;
+          scraped_data?: any | null;
+          updated_at?: string | null;
+        };
+      };
+      analysis_history: {
+        Row: {
+          id: string;
+          user_id: string;
+          resume_id: string | null;
+          job_posting_id: string | null;
+          analysis_result: any;
+          match_result: any;
+          session_id: string | null;
+          analysis_type: string | null;
+          status: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          resume_id?: string | null;
+          job_posting_id?: string | null;
+          analysis_result?: any;
+          match_result?: any;
+          session_id?: string | null;
+          analysis_type?: string | null;
+          status?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          resume_id?: string | null;
+          job_posting_id?: string | null;
+          analysis_result?: any;
+          match_result?: any;
+          session_id?: string | null;
+          analysis_type?: string | null;
+          status?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
