@@ -18,10 +18,10 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
+import { useAuth } from '../contexts/AuthContext';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
 import { getApplicationStats } from '../services/applicationService';
-import { getDevUserId } from '../utils/tempUser';
 import type { ApplicationStats } from '../services/applicationService';
 
 const StatCard = ({ 
@@ -66,28 +66,34 @@ const StatCard = ({
   </motion.div>
 );
 
-
-
 const Dashboard: React.FC = () => {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const [stats, setStats] = useState<ApplicationStats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Get user data with fallbacks
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || '';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U';
+  const firstName = displayName.split(' ')[0] || 'User';
+
   useEffect(() => {
     const loadStats = async () => {
+      if (!user?.id) return;
+      
       try {
-        const userId = getDevUserId();
-        const statsResult = await getApplicationStats(userId);
-        setStats(statsResult);
+        const applicationStats = await getApplicationStats(user.id);
+        setStats(applicationStats);
       } catch (error) {
-        console.error('Error loading dashboard stats:', error);
+        console.error('Error loading stats:', error);
       } finally {
         setLoading(false);
       }
     };
 
     loadStats();
-  }, []);
+  }, [user?.id]);
 
   return (
     <PageLayout showBackButton backTo="/results" backLabel="Back">
@@ -101,7 +107,7 @@ const Dashboard: React.FC = () => {
           className="mb-8"
         >
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back, John! 👋
+            Welcome back, {firstName}! 👋
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
             Here's what's happening with your resume optimization journey
@@ -126,7 +132,7 @@ const Dashboard: React.FC = () => {
               <div className="flex items-start gap-6">
                 <div className="relative">
                   <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white">
-                    JS
+                    {initials}
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center">
                     <Crown className="w-3 h-3 text-white" />
@@ -135,8 +141,8 @@ const Dashboard: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">John Smith</h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-2">john.smith@email.com</p>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{displayName}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-2">{userEmail}</p>
                       <div className="flex items-center gap-2">
                         <div className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full text-white text-sm font-semibold">
                           Pro Plan

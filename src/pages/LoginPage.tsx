@@ -41,18 +41,45 @@ const LoginPage: React.FC = () => {
     // Clear any existing error
     setError(null);
     
+    // Validate inputs
     if (!email || !password) {
       setError('Please fill in all fields');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return;
     }
 
     setLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(email.trim().toLowerCase(), password);
       
       if (error) {
-        setError(error.message);
+        // Handle specific Supabase auth errors
+        let errorMessage = error.message;
+        
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and click the confirmation link before signing in.';
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'Too many login attempts. Please wait a moment and try again.';
+        } else if (error.message.includes('signup disabled')) {
+          errorMessage = 'Account creation is currently disabled. Please contact support.';
+        }
+        
+        setError(errorMessage);
         setLoading(false);
       } else {
         // Success! Clear form and navigate
@@ -62,7 +89,8 @@ const LoginPage: React.FC = () => {
         navigate(from, { replace: true });
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please check your internet connection and try again.');
       setLoading(false);
     }
   };

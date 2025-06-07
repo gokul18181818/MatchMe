@@ -32,14 +32,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error getting session:', error);
-      } else {
-        setSession(session);
-        setUser(session?.user ?? null);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+          setSession(null);
+          setUser(null);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error('Error in getSession:', error);
+        setSession(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getSession();
@@ -47,10 +56,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        console.log('Auth state changed:', event, session?.user?.email || 'no user');
+        
+        try {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          
+          // Handle specific auth events
+          if (event === 'SIGNED_OUT') {
+            // Clear any cached data when user signs out
+            setSession(null);
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error handling auth state change:', error);
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+        }
       }
     );
 

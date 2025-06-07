@@ -35,24 +35,24 @@ interface FormContextType {
 }
 
 const defaultProfileData: ProfileData = {
-  firstName: 'John',
-  lastName: 'Smith',
-  email: 'john.smith@email.com',
-  phone: '+1 (555) 123-4567',
-  location: 'San Francisco, CA',
-  birthDate: '1995-03-15',
-  jobTitle: 'Software Engineer',
-  company: 'Tech Corp',
-  bio: 'Passionate software engineer with 5+ years of experience building scalable web applications. Love solving complex problems and learning new technologies.',
-  website: 'https://johnsmith.dev',
-  github: 'johnsmith',
-  linkedin: 'johnsmith',
-  twitter: 'johnsmith_dev'
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  location: '',
+  birthDate: '',
+  jobTitle: '',
+  company: '',
+  bio: '',
+  website: '',
+  github: '',
+  linkedin: '',
+  twitter: ''
 };
 
 const defaultSettingsData: SettingsData = {
-  fullName: 'John Smith',
-  email: 'john.smith@email.com',
+  fullName: '',
+  email: '',
   password: '',
   showPassword: false
 };

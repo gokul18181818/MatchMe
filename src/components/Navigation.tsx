@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard, Crown } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
+import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
 interface NavigationProps {
@@ -18,8 +19,19 @@ const Navigation: React.FC<NavigationProps> = ({
   backLabel = "Back" 
 }) => {
   const { theme } = useTheme();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Get user data with fallbacks
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || '';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U';
+
+  const handleSignOut = async () => {
+    setIsProfileOpen(false);
+    await signOut();
+  };
 
   return (
     <motion.div
@@ -126,9 +138,9 @@ const Navigation: React.FC<NavigationProps> = ({
             )}
           >
             <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-xs font-bold text-white">JS</span>
+              <span className="text-xs font-bold text-white">{initials}</span>
             </div>
-            <span className="hidden lg:block">John Smith</span>
+            <span className="hidden lg:block">{displayName}</span>
             <ChevronDown className={cn(
               "w-4 h-4 transition-transform duration-300",
               isProfileOpen && "rotate-180"
@@ -153,11 +165,11 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="p-3 border-b border-zinc-200 dark:border-zinc-700">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-bold text-white">JS</span>
+                      <span className="text-sm font-bold text-white">{initials}</span>
                     </div>
                     <div>
-                      <div className="font-semibold text-zinc-900 dark:text-white">John Smith</div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">john.smith@email.com</div>
+                      <div className="font-semibold text-zinc-900 dark:text-white">{displayName}</div>
+                      <div className="text-sm text-zinc-600 dark:text-zinc-400">{userEmail}</div>
                     </div>
                   </div>
                 </div>
@@ -183,10 +195,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   
                   <div className="border-t border-zinc-200 dark:border-zinc-700 mt-2 pt-2">
                     <button
-                      onClick={() => {
-                        setIsProfileOpen(false);
-                        // Add logout logic here
-                      }}
+                      onClick={handleSignOut}
                       className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 text-red-600 dark:text-red-400"
                     >
                       <LogOut className="w-5 h-5" />

@@ -285,7 +285,7 @@ const ResultsPage: React.FC = () => {
                   <div className="space-y-3">
                     {/* Header */}
                     <div className="text-center pb-2 border-b-2 border-blue-600 dark:border-blue-400">
-                      <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-1">John Smith</h1>
+                      <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Sample Resume</h1>
                       <p className="text-gray-600 dark:text-gray-400 text-xs mb-1">
                         123 Street Name, Town, State 12345
                       </p>

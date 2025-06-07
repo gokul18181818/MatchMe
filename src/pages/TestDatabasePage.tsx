@@ -47,8 +47,8 @@ const TestDatabasePage: React.FC = () => {
       // Create user settings
       addResult('⚙️ Creating user settings...');
       const settings = await createUserSettings(userId, {
-        full_name: 'John Smith',
-        display_email: 'john.smith@email.com',
+        full_name: 'Sample User',
+        display_email: 'user@example.com',
         show_password: false,
         theme: 'dark',
         email_notifications: true,
