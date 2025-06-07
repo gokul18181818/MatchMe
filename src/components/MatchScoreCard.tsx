@@ -17,7 +17,7 @@ const MatchScoreCard: React.FC = () => {
     });
 
     return animation.stop;
-  }, [score]);
+  }, [score, count]);
 
   return (
     <div className="p-4 border rounded-lg shadow-sm text-center">

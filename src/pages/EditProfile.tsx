@@ -16,13 +16,11 @@ import {
   Upload,
   X
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
 
 const EditProfile: React.FC = () => {
-  const { theme } = useTheme();
   const [profileData, setProfileData] = useState({
     firstName: 'John',
     lastName: 'Smith',

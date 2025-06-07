@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import ThemeToggle from './ThemeToggle';
 
@@ -17,7 +16,6 @@ const Navigation: React.FC<NavigationProps> = ({
   backTo = "/", 
   backLabel = "Back" 
 }) => {
-  const { theme } = useTheme();
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 

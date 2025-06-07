@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, CheckCircle, AlertCircle, Star, Download, Trophy, Target, Zap, Crown, PartyPopper } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { Sparkles, TrendingUp, CheckCircle, Star, Download, Trophy, Target, Zap, PartyPopper } from 'lucide-react';
+import { useAnalysis } from '../contexts/AnalysisContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -58,7 +57,7 @@ const StatCard = ({
   value, 
   color 
 }: { 
-  icon: any, 
+  icon: React.ElementType,
   title: string, 
   value: string | number, 
   color: string 
@@ -85,7 +84,7 @@ const StatCard = ({
 );
 
 const ResultsPage: React.FC = () => {
-  const { theme } = useTheme();
+  const { matchScore } = useAnalysis();
   const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {
@@ -180,10 +179,10 @@ const ResultsPage: React.FC = () => {
                 value="A+" 
                 color="bg-purple-500"
               />
-              <StatCard 
+              <StatCard
                 icon={CheckCircle}
-                title="ATS Score" 
-                value="98%" 
+                title="ATS Score"
+                value={matchScore !== null ? `${matchScore}%` : '--'}
                 color="bg-green-500"
               />
               <StatCard 
