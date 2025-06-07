@@ -20,11 +20,14 @@ const AnalyzePage: React.FC = () => {
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     
-    // Simulate analysis time for better UX
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Simulate analysis time with progress updates for better UX
+    await new Promise(resolve => setTimeout(resolve, 2500));
     
     setIsAnalyzing(false);
-    navigate('/results');
+    // Navigate with a smooth transition
+    setTimeout(() => {
+      navigate('/results');
+    }, 200);
   };
 
   // Check if we have resume content (either file or text) AND job URL
