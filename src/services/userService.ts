@@ -220,13 +220,29 @@ export const updateUserPreferences = async (userId: string, preferencesData: Par
   return data;
 };
 
+// Track migration status to prevent multiple executions
+let migrationCompleted = false;
+
 // Utility functions for localStorage migration
 export const migrateLocalStorageToDatabase = async (userId: string) => {
+  // Prevent multiple migrations
+  if (migrationCompleted) {
+    return;
+  }
+
+  // Check if there's actually data to migrate
+  const hasProfileData = localStorage.getItem('profileData');
+  const hasSettingsData = localStorage.getItem('settingsData');
+  
+  if (!hasProfileData && !hasSettingsData) {
+    migrationCompleted = true;
+    return;
+  }
+
   try {
     // Migrate profile data
-    const storedProfileData = localStorage.getItem('profileData');
-    if (storedProfileData) {
-      const profileData = JSON.parse(storedProfileData);
+    if (hasProfileData) {
+      const profileData = JSON.parse(hasProfileData);
       await createUserProfile(userId, {
         first_name: profileData.firstName,
         last_name: profileData.lastName,
@@ -244,9 +260,8 @@ export const migrateLocalStorageToDatabase = async (userId: string) => {
     }
 
     // Migrate settings data
-    const storedSettingsData = localStorage.getItem('settingsData');
-    if (storedSettingsData) {
-      const settingsData = JSON.parse(storedSettingsData);
+    if (hasSettingsData) {
+      const settingsData = JSON.parse(hasSettingsData);
       await createUserSettings(userId, {
         full_name: settingsData.fullName,
         display_email: settingsData.email,
@@ -258,6 +273,7 @@ export const migrateLocalStorageToDatabase = async (userId: string) => {
     localStorage.removeItem('profileData');
     localStorage.removeItem('settingsData');
     
+    migrationCompleted = true;
     console.log('Successfully migrated localStorage data to database');
   } catch (error) {
     console.error('Error migrating localStorage data:', error);

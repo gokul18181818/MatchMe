@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [loading]);
+  }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
