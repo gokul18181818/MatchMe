@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -14,6 +14,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
+import { useFormContext, type SettingsData } from '../contexts/FormContext';
 
 const SettingsSection = ({ 
   title, 
@@ -84,7 +85,14 @@ const ToggleSwitch = ({
 
 const Settings: React.FC = () => {
   const { theme } = useTheme();
-  const [showPassword, setShowPassword] = useState(false);
+  const { settingsData, updateSettingsData } = useFormContext();
+
+  const handleChange = (
+    field: keyof SettingsData,
+    value: string | boolean
+  ) => {
+    updateSettingsData(field, value);
+  };
 
   return (
     <PageLayout showBackButton backTo="/dashboard" backLabel="Back to Dashboard">
@@ -118,7 +126,8 @@ const Settings: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  defaultValue="John Smith"
+                  value={settingsData.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
                   className={cn(
                     "w-full px-5 py-4 rounded-lg border transition-all duration-300 text-base",
                     "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
@@ -137,7 +146,8 @@ const Settings: React.FC = () => {
                   <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
                   <input
                     type="email"
-                    defaultValue="john.smith@email.com"
+                    value={settingsData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
                     className={cn(
                       "w-full pl-12 pr-5 py-4 rounded-lg border transition-all duration-300 text-base",
                       "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
@@ -158,7 +168,9 @@ const Settings: React.FC = () => {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={settingsData.showPassword ? 'text' : 'password'}
+                    value={settingsData.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
                     placeholder="Enter new password"
                     className={cn(
                       "w-full pl-12 pr-14 py-4 rounded-lg border transition-all duration-300 text-base",
@@ -170,10 +182,10 @@ const Settings: React.FC = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => handleChange('showPassword', !settingsData.showPassword)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {settingsData.showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
