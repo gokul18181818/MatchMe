@@ -96,10 +96,10 @@ const Dashboard: React.FC = () => {
   }, [user?.id]);
 
   return (
-    <PageLayout showBackButton backTo="/results" backLabel="Back">
+    <PageLayout>
       <div>
 
-        {/* Welcome Section */}
+        {/* Welcome Section with Action Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,9 +109,25 @@ const Dashboard: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Welcome back, {firstName}! 👋
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Here's what's happening with your resume optimization journey
           </p>
+          
+          {/* Quick Action Buttons */}
+          <div className="flex flex-wrap gap-4">
+            <Link to="/analyze">
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 text-lg font-semibold">
+                <Zap className="w-5 h-5 mr-2" />
+                Tailor Resume for Job
+              </Button>
+            </Link>
+            <Link to="/history">
+              <Button className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 px-6 py-3">
+                <FileText className="w-4 h-4 mr-2" />
+                View Applications
+              </Button>
+            </Link>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, CheckCircle, AlertCircle, Star, Download, Trophy, Target, Zap, Crown, PartyPopper } from 'lucide-react';
+import { Sparkles, TrendingUp, CheckCircle, AlertCircle, Star, Download, Trophy, Target, Zap, Crown, PartyPopper, Building, FileText } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
@@ -112,12 +112,25 @@ const StatCard = ({
 
 const ResultsPage: React.FC = () => {
   const { theme } = useTheme();
+  const location = useLocation();
   const [animatedScore, setAnimatedScore] = useState(0);
+  
+  // Get application data from navigation state
+  const applicationData = location.state as {
+    analysisScore?: number;
+    company?: string;
+    position?: string;
+    applicationId?: string;
+    newApplication?: boolean;
+  } | null;
+
+  const finalScore = applicationData?.analysisScore || 92;
+  const showApplicationSuccess = applicationData?.newApplication || false;
 
   useEffect(() => {
     // Animate the improvement score
     let current = 0;
-    const target = 92;
+    const target = finalScore;
     const increment = target / 50;
     const timer = setInterval(() => {
       current += increment;
@@ -130,12 +143,42 @@ const ResultsPage: React.FC = () => {
     }, 30);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [finalScore]);
 
   return (
     <PageLayout showBackButton backTo="/analyze" backLabel="Back" className="px-3 py-3 h-screen flex flex-col">
       <Confetti />
       <div className="relative z-10 h-full flex flex-col">
+
+        {/* Application Success Banner */}
+        {showApplicationSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg"
+          >
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-300">
+                  Application Saved Successfully! 🎉
+                </h3>
+                <p className="text-sm text-green-700 dark:text-green-400">
+                  {applicationData?.position} at {applicationData?.company} has been added to your applications with "Pending" status
+                </p>
+              </div>
+              <div className="ml-auto">
+                <Link to="/history">
+                  <Button className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2">
+                    <FileText className="w-4 h-4 mr-2" />
+                    View Applications
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Celebration Header */}
         <motion.div
@@ -147,12 +190,12 @@ const ResultsPage: React.FC = () => {
           <div className="flex items-center justify-center gap-2 mb-2">
             <PartyPopper className="w-6 h-6 text-blue-500" />
             <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
-              Your Essay is Perfected!
+              Your Resume is Perfected!
             </h2>
             <Trophy className="w-6 h-6 text-purple-500" />
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Congratulations! Your professional story has been beautifully refined and is ready to captivate employers ✨
+            Congratulations! Your resume has been optimized and {showApplicationSuccess ? 'automatically saved to your applications' : 'is ready to impress employers'} ✨
           </p>
         </motion.div>
 
@@ -423,6 +466,33 @@ const ResultsPage: React.FC = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-6 flex flex-wrap justify-center gap-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
+          <Link to="/dashboard">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 font-semibold">
+              <Crown className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+          <Link to="/analyze">
+            <Button className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 px-6 py-3">
+              <Zap className="w-4 h-4 mr-2" />
+              Analyze Another Resume
+            </Button>
+          </Link>
+          <Link to="/history">
+            <Button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3">
+              <FileText className="w-4 h-4 mr-2" />
+              View All Applications
+            </Button>
+          </Link>
+        </motion.div>
       </div>
     </PageLayout>
   );

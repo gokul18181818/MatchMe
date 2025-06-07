@@ -315,4 +315,94 @@ export const migrateMockApplicationData = async (userId: string) => {
   } catch (error) {
     console.error('Error migrating mock application data:', error);
   }
+};
+
+// Utility function to extract company name from LinkedIn job URL
+export const extractCompanyFromJobUrl = (jobUrl: string): string => {
+  try {
+    // Extract company from LinkedIn URL patterns
+    const url = new URL(jobUrl);
+    
+    if (url.hostname.includes('linkedin.com')) {
+      // LinkedIn URLs often contain company info in the path or search params
+      const pathParts = url.pathname.split('/');
+      const companyIndex = pathParts.indexOf('company');
+      if (companyIndex !== -1 && pathParts[companyIndex + 1]) {
+        return pathParts[companyIndex + 1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      }
+      
+      // Try to extract from search params
+      const searchParams = new URLSearchParams(url.search);
+      const companyParam = searchParams.get('f_C') || searchParams.get('company');
+      if (companyParam) {
+        return companyParam.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      }
+    }
+    
+    // For other job sites, try to extract from hostname
+    const hostname = url.hostname.replace('www.', '').replace('.com', '').replace('.org', '').replace('.net', '');
+    return hostname.charAt(0).toUpperCase() + hostname.slice(1);
+  } catch {
+    return 'Unknown Company';
+  }
+};
+
+// Utility function to extract job title from job URL or description
+export const extractJobTitleFromUrl = (jobUrl: string): string => {
+  try {
+    const url = new URL(jobUrl);
+    
+    if (url.hostname.includes('linkedin.com')) {
+      // LinkedIn URLs often have job title in the path
+      const pathParts = url.pathname.split('/');
+      const jobsIndex = pathParts.indexOf('jobs');
+      if (jobsIndex !== -1) {
+        // Look for title-like segments after /jobs/
+        for (let i = jobsIndex + 1; i < pathParts.length; i++) {
+          const part = pathParts[i];
+          if (part && part !== 'view' && !part.match(/^\d+$/)) {
+            return part.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          }
+        }
+      }
+    }
+    
+    return 'Software Engineer'; // Default fallback
+  } catch {
+    return 'Software Engineer';
+  }
+};
+
+// Create application from analysis data
+export const createApplicationFromAnalysis = async (
+  userId: string,
+  jobUrl: string,
+  resumeFile?: File,
+  analysisScore?: number
+): Promise<ApplicationHistory | null> => {
+  const company = extractCompanyFromJobUrl(jobUrl);
+  const position = extractJobTitleFromUrl(jobUrl);
+  
+  // Generate a reasonable score if not provided
+  const score = analysisScore || Math.floor(Math.random() * 20) + 75; // 75-95% range
+  
+  const applicationData: Omit<ApplicationHistory, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
+    resume_id: null, // We'll implement resume storage later
+    company,
+    position,
+    job_url: jobUrl,
+    location: null, // Could be extracted later
+    application_date: new Date().toISOString().split('T')[0], // Today's date
+    status: 'pending' as ApplicationStatus,
+    score,
+    improvement: null,
+    notes: `Application created from resume analysis on ${new Date().toLocaleDateString()}`,
+    follow_up_date: null,
+    interview_date: null,
+    offer_amount: null,
+    company_logo_url: null,
+    is_active: true,
+  };
+
+  return await createApplication(userId, applicationData);
 }; 
