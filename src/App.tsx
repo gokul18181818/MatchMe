@@ -12,6 +12,7 @@ const History = lazy(() => import('./pages/History'));
 const Settings = lazy(() => import('./pages/Settings'));
 const EditProfile = lazy(() => import('./pages/EditProfile'));
 const Subscription = lazy(() => import('./pages/Subscription'));
+const TestDatabasePage = lazy(() => import('./pages/TestDatabasePage'));
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/edit-profile" element={<EditProfile />} />
               <Route path="/subscription" element={<Subscription />} />
+              <Route path="/test-database" element={<TestDatabasePage />} />
             </Routes>
           </Suspense>
         </Router>
