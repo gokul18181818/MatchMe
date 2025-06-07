@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard, Crown } from 'lucide-react';
+import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard, Crown, Zap } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import ThemeToggle from './ThemeToggle';
@@ -83,8 +83,8 @@ const Navigation: React.FC<NavigationProps> = ({
         </Link>
 
         {/* Past Resumes Button */}
-        <Link 
-          to="/history" 
+        <Link
+          to="/history"
           className={cn(
             "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
             "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
@@ -95,6 +95,21 @@ const Navigation: React.FC<NavigationProps> = ({
         >
           <FileText className="w-4 h-4" />
           <span>Resumes</span>
+        </Link>
+
+        {/* Performance Test Button */}
+        <Link
+          to="/performance"
+          className={cn(
+            "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
+            "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
+            "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
+            "border border-white/20 dark:border-white/10 font-medium text-sm",
+            location.pathname === '/performance' && "bg-blue-100/50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600"
+          )}
+        >
+          <Zap className="w-4 h-4" />
+          <span>Speed Test</span>
         </Link>
 
         {/* Subscription Button */}
