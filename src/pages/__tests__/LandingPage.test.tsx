@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import LandingPage from '../LandingPage';
 import { ThemeProvider } from '../../contexts/ThemeContext';
