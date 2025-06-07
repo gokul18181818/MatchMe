@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 
 type ResumeUploaderProps = {
@@ -10,7 +9,6 @@ type ResumeUploaderProps = {
 };
 
 const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextChange }) => {
-  const { theme } = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
 

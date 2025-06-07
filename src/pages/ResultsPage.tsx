@@ -1,8 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, CheckCircle, AlertCircle, Star, Download, Trophy, Target, Zap, Crown, PartyPopper } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { Sparkles, TrendingUp, CheckCircle, Star, Download, Trophy, Target, Zap, PartyPopper } from 'lucide-react';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -57,11 +55,11 @@ const StatCard = ({
   title, 
   value, 
   color 
-}: { 
-  icon: any, 
-  title: string, 
-  value: string | number, 
-  color: string 
+}: {
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>,
+  title: string,
+  value: string | number,
+  color: string
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -85,7 +83,6 @@ const StatCard = ({
 );
 
 const ResultsPage: React.FC = () => {
-  const { theme } = useTheme();
   const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {

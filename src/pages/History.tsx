@@ -13,10 +13,8 @@ import {
   Eye,
   Clock,
   CheckCircle,
-  XCircle,
-  AlertCircle
+  XCircle
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -228,7 +226,6 @@ const FilterDropdown = ({
 };
 
 const History: React.FC = () => {
-  const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');

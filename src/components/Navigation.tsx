@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useLoading } from '../contexts/LoadingContext';
 import { cn } from '../lib/utils';
 import ThemeToggle from './ThemeToggle';
 
@@ -12,14 +12,24 @@ interface NavigationProps {
   backLabel?: string;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ 
-  showBackButton = false, 
-  backTo = "/", 
-  backLabel = "Back" 
+const Navigation: React.FC<NavigationProps> = ({
+  showBackButton = false,
+  backTo = "/",
+  backLabel = "Back"
 }) => {
-  const { theme } = useTheme();
+  const { loading } = useLoading();
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-between mb-8">
+        <div className="w-24 h-8 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse" />
+        <div className="w-32 h-8 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse" />
+        <div className="w-24 h-8 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <motion.div

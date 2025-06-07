@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Loader } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useLoading } from '../contexts/LoadingContext';
 import { cn } from '../lib/utils';
 import ResumeUploader from '../components/ResumeUploader';
 import JobDescriptionInput from '../components/JobDescriptionInput';
@@ -14,16 +14,18 @@ const AnalyzePage: React.FC = () => {
   const [jobUrl, setJobUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
-  const { theme } = useTheme();
+  const { startLoading, stopLoading } = useLoading();
   const navigate = useNavigate();
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
-    
+    startLoading();
+
     // Simulate analysis time for better UX
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     setIsAnalyzing(false);
+    stopLoading();
     navigate('/results');
   };
 

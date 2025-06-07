@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, Target, Zap, Sparkles, FileText, BarChart3 } from 'lucide-react';
+import { Target, Sparkles, FileText, BarChart3 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import ThemeToggle from '../components/ThemeToggle';
