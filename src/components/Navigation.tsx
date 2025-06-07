@@ -41,7 +41,7 @@ const Navigation: React.FC<NavigationProps> = ({
       className="flex items-center justify-between mb-8 relative"
     >
       {/* Left Side - Back Button */}
-      <div className="flex items-center w-1/4">
+      <div className="flex items-center flex-shrink-0 min-w-0 lg:w-1/4">
         {showBackButton && (
           <Link 
             to={backTo} 
@@ -59,7 +59,7 @@ const Navigation: React.FC<NavigationProps> = ({
       </div>
       
       {/* Center - FitCheck Logo */}
-      <div className="flex justify-center w-1/2">
+      <div className="flex justify-center items-center flex-shrink-0 mx-4">
         <Link 
           to="/"
           className="flex items-center space-x-3 hover:opacity-80 transition-all duration-300 group"
@@ -71,19 +71,19 @@ const Navigation: React.FC<NavigationProps> = ({
           )}>
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
             FitCheck AI
           </h1>
         </Link>
       </div>
       
       {/* Right Side - Enhanced Navigation */}
-      <div className="flex items-center justify-end space-x-3 w-1/4">
-        {/* Dashboard Button */}
+      <div className="flex items-center justify-end space-x-2 lg:space-x-3 flex-shrink-0 min-w-0 lg:w-1/4">
+        {/* Dashboard Button - Hidden on small screens */}
         <Link 
           to="/dashboard" 
           className={cn(
-            "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
+            "hidden sm:flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
             "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
             "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
             "border border-white/20 dark:border-white/10 font-medium text-sm",
@@ -91,14 +91,14 @@ const Navigation: React.FC<NavigationProps> = ({
           )}
         >
           <LayoutDashboard className="w-4 h-4" />
-          <span>Dashboard</span>
+          <span className="hidden lg:block">Dashboard</span>
         </Link>
 
-        {/* Past Resumes Button */}
+        {/* Past Resumes Button - Hidden on small screens */}
         <Link 
           to="/history" 
           className={cn(
-            "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
+            "hidden md:flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
             "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
             "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
             "border border-white/20 dark:border-white/10 font-medium text-sm",
@@ -106,14 +106,14 @@ const Navigation: React.FC<NavigationProps> = ({
           )}
         >
           <FileText className="w-4 h-4" />
-          <span>Resumes</span>
+          <span className="hidden lg:block">Resumes</span>
         </Link>
 
         {/* Subscription Button */}
         <Link 
           to="/subscription" 
           className={cn(
-            "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
+            "flex items-center space-x-1 lg:space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
             "bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30",
             "text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100",
             "border border-purple-300/50 dark:border-purple-600/50 font-medium text-sm",
@@ -122,7 +122,7 @@ const Navigation: React.FC<NavigationProps> = ({
           )}
         >
           <Crown className="w-4 h-4" />
-          <span>Pro</span>
+          <span className="hidden sm:block">Pro</span>
         </Link>
         
         {/* Profile Dropdown */}
@@ -130,17 +130,17 @@ const Navigation: React.FC<NavigationProps> = ({
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className={cn(
-              "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300",
+              "flex items-center space-x-1 lg:space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
               "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
               "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
               "border border-white/20 dark:border-white/10 font-medium text-sm",
               isProfileOpen && "bg-white/20 dark:bg-white/10"
             )}
           >
-            <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+            <div className="w-6 lg:w-7 h-6 lg:h-7 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
               <span className="text-xs font-bold text-white">{initials}</span>
             </div>
-            <span className="hidden lg:block">{displayName}</span>
+            <span className="hidden xl:block">{displayName}</span>
             <ChevronDown className={cn(
               "w-4 h-4 transition-transform duration-300",
               isProfileOpen && "rotate-180"
