@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Loader } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import ResumeUploader from '../components/ResumeUploader';
 import JobDescriptionInput from '../components/JobDescriptionInput';
@@ -14,7 +13,6 @@ const AnalyzePage: React.FC = () => {
   const [jobUrl, setJobUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
-  const { theme } = useTheme();
   const navigate = useNavigate();
 
   const handleAnalyze = async () => {

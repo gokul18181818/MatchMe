@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import type { TextItem, TextMarkedContent } from 'pdfjs-dist/types/src/display/api';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import mammoth from 'mammoth/mammoth.browser';
+
+GlobalWorkerOptions.workerSrc = pdfWorker;
 
 type ResumeUploaderProps = {
   onFileSelect: (file: File | null) => void;
@@ -10,24 +15,84 @@ type ResumeUploaderProps = {
 };
 
 const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextChange }) => {
-  const { theme } = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const MAX_FILE_SIZE_MB = 5;
+
+  const parsePdf = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const strings = content.items
+        .map((item: TextItem | TextMarkedContent) =>
+          'str' in item ? item.str : ''
+        )
+        .join(' ');
+      text += strings + '\n';
+    }
+    return text;
+  };
+
+  const parseDocx = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
+    setErrorMessage('');
+
+    if (!file) {
+      setSelectedFile(null);
+      onFileSelect(null);
+      return;
+    }
+
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > MAX_FILE_SIZE_MB) {
+      setErrorMessage(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit`);
+      return;
+    }
+
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!ext || !['pdf', 'doc', 'docx'].includes(ext)) {
+      setErrorMessage('Unsupported file type');
+      return;
+    }
+
     setSelectedFile(file);
     onFileSelect(file);
-    
-    if (file) {
-      setResumeText(''); // Clear text when file is selected
-      onTextChange(''); // Update parent component
+
+    try {
+      let text = '';
+      if (ext === 'pdf') {
+        text = await parsePdf(file);
+      } else if (ext === 'docx') {
+        text = await parseDocx(file);
+      } else {
+        setErrorMessage('DOC files are not supported');
+        return;
+      }
+
+      setResumeText(text);
+      onTextChange(text);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage('Failed to read file');
     }
   };
 
   const handleTextChange = (text: string) => {
     setResumeText(text);
     onTextChange(text); // Update parent component
+
+    setErrorMessage('');
     
     if (text.trim()) {
       setSelectedFile(null); // Clear file when text is entered
@@ -103,7 +168,7 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
             id="resume-upload"
             onChange={handleFileChange}
           />
-          <label 
+          <label
             htmlFor="resume-upload"
             className={cn(
               "inline-block px-6 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300",
@@ -114,6 +179,11 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
           >
             {selectedFile ? 'Change File' : 'Choose File'}
           </label>
+          {errorMessage && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              {errorMessage}
+            </p>
+          )}
         </div>
 
         {/* Divider */}

@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, CheckCircle, AlertCircle, Star, Download, Trophy, Target, Zap, Crown, PartyPopper } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { Sparkles, TrendingUp, CheckCircle, Star, Download, Trophy, Target, Zap, PartyPopper } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -58,7 +57,7 @@ const StatCard = ({
   value, 
   color 
 }: { 
-  icon: any, 
+  icon: LucideIcon,
   title: string, 
   value: string | number, 
   color: string 
@@ -85,7 +84,6 @@ const StatCard = ({
 );
 
 const ResultsPage: React.FC = () => {
-  const { theme } = useTheme();
   const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {

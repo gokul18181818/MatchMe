@@ -10,10 +10,10 @@ import {
   Lock,
   Download
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
+import type { LucideIcon } from 'lucide-react';
 
 const SettingsSection = ({ 
   title, 
@@ -24,7 +24,7 @@ const SettingsSection = ({
   title: string, 
   description: string, 
   children: React.ReactNode,
-  icon: any
+  icon: LucideIcon
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -49,41 +49,8 @@ const SettingsSection = ({
   </motion.div>
 );
 
-const ToggleSwitch = ({ 
-  enabled, 
-  onChange, 
-  label, 
-  description 
-}: { 
-  enabled: boolean, 
-  onChange: (enabled: boolean) => void,
-  label: string,
-  description: string
-}) => (
-  <div className="flex items-center justify-between py-3">
-    <div>
-      <div className="font-medium text-zinc-900 dark:text-white">{label}</div>
-      <div className="text-sm text-zinc-600 dark:text-zinc-400">{description}</div>
-    </div>
-    <button
-      onClick={() => onChange(!enabled)}
-      className={cn(
-        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-        enabled ? "bg-blue-600" : "bg-zinc-300 dark:bg-zinc-600"
-      )}
-    >
-      <span
-        className={cn(
-          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-          enabled ? "translate-x-6" : "translate-x-1"
-        )}
-      />
-    </button>
-  </div>
-);
 
 const Settings: React.FC = () => {
-  const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
