@@ -13,89 +13,16 @@ import {
   Eye,
   Clock,
   CheckCircle,
-  XCircle,
-  AlertCircle
+  XCircle
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useAnalysis } from '../contexts/AnalysisContext';
+import type { AnalysisRecord } from '../contexts/AnalysisContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
 
-interface ResumeHistory {
-  id: string;
-  company: string;
-  position: string;
-  date: string;
-  status: 'pending' | 'interviewed' | 'rejected' | 'offer';
-  score: number;
-  improvement: number;
-  logo: string;
-}
 
-const mockHistory: ResumeHistory[] = [
-  {
-    id: '1',
-    company: 'Google',
-    position: 'Software Engineer',
-    date: '2024-01-10',
-    status: 'interviewed',
-    score: 92,
-    improvement: 27,
-    logo: '🅶'
-  },
-  {
-    id: '2',
-    company: 'Microsoft',
-    position: 'Senior Developer',
-    date: '2024-01-08',
-    status: 'pending',
-    score: 89,
-    improvement: 23,
-    logo: 'Ⓜ️'
-  },
-  {
-    id: '3',
-    company: 'Apple',
-    position: 'iOS Developer',
-    date: '2024-01-05',
-    status: 'offer',
-    score: 95,
-    improvement: 31,
-    logo: '🍎'
-  },
-  {
-    id: '4',
-    company: 'Meta',
-    position: 'Product Manager',
-    date: '2024-01-03',
-    status: 'rejected',
-    score: 78,
-    improvement: 15,
-    logo: 'Ⓜ️'
-  },
-  {
-    id: '5',
-    company: 'Netflix',
-    position: 'Full Stack Engineer',
-    date: '2023-12-28',
-    status: 'interviewed',
-    score: 88,
-    improvement: 25,
-    logo: 'Ⓝ'
-  },
-  {
-    id: '6',
-    company: 'Amazon',
-    position: 'Cloud Engineer',
-    date: '2023-12-25',
-    status: 'pending',
-    score: 85,
-    improvement: 20,
-    logo: '🅰️'
-  }
-];
-
-const StatusBadge = ({ status }: { status: ResumeHistory['status'] }) => {
+const StatusBadge = ({ status }: { status: AnalysisRecord['status'] }) => {
   const statusConfig = {
     pending: {
       color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
@@ -133,7 +60,7 @@ const StatusBadge = ({ status }: { status: ResumeHistory['status'] }) => {
   );
 };
 
-const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
+const ResumeHistoryCard = ({ resume }: { resume: AnalysisRecord }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -209,7 +136,7 @@ const FilterDropdown = ({
   return (
     <select
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value)}
       className={cn(
         "px-4 py-2 rounded-lg border transition-all duration-300",
         "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
@@ -228,19 +155,19 @@ const FilterDropdown = ({
 };
 
 const History: React.FC = () => {
-  const { theme } = useTheme();
+  const { analyses } = useAnalysis();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
 
-  const filteredHistory = mockHistory
-    .filter(resume => {
+  const filteredHistory = analyses
+    .filter((resume: AnalysisRecord) => {
       const matchesSearch = resume.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            resume.position.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || resume.status === statusFilter;
       return matchesSearch && matchesStatus;
     })
-    .sort((a, b) => {
+    .sort((a: AnalysisRecord, b: AnalysisRecord) => {
       if (sortBy === 'date') {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       } else if (sortBy === 'score') {
@@ -252,11 +179,14 @@ const History: React.FC = () => {
     });
 
   const stats = {
-    total: mockHistory.length,
-    pending: mockHistory.filter(r => r.status === 'pending').length,
-    interviewed: mockHistory.filter(r => r.status === 'interviewed').length,
-    offers: mockHistory.filter(r => r.status === 'offer').length,
-    avgScore: Math.round(mockHistory.reduce((sum, r) => sum + r.score, 0) / mockHistory.length)
+    total: analyses.length,
+    pending: analyses.filter((r: AnalysisRecord) => r.status === 'pending').length,
+    interviewed: analyses.filter((r: AnalysisRecord) => r.status === 'interviewed').length,
+    offers: analyses.filter((r: AnalysisRecord) => r.status === 'offer').length,
+    avgScore: Math.round(
+      analyses.reduce((sum: number, r: AnalysisRecord) => sum + r.score, 0) /
+      (analyses.length || 1)
+    )
   };
 
   return (
@@ -335,7 +265,7 @@ const History: React.FC = () => {
               type="text"
               placeholder="Search companies or positions..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               className={cn(
                 "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
                 "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",

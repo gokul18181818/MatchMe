@@ -2,20 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  User, 
-  Settings, 
-  Crown, 
-  TrendingUp, 
-  FileText, 
-  Award, 
+  Settings,
+  Crown,
+  TrendingUp,
+  FileText,
+  Award,
   Target,
   Edit3,
-  Mail,
-  Calendar,
   BarChart3,
   Zap
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -65,7 +61,6 @@ const StatCard = ({
 
 
 const Dashboard: React.FC = () => {
-  const { theme } = useTheme();
 
   return (
     <PageLayout showBackButton backTo="/results" backLabel="Back">

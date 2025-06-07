@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 
 // LinkedIn Icon Component
@@ -16,7 +15,6 @@ type JobDescriptionInputProps = {
 };
 
 const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ value, onChange }) => {
-  const { theme } = useTheme();
 
   return (
     <motion.div

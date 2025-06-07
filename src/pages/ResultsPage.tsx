@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, CheckCircle, AlertCircle, Star, Download, Trophy, Target, Zap, Crown, PartyPopper } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { Sparkles, TrendingUp, CheckCircle, Star, Download, Trophy, Target, Zap, PartyPopper } from 'lucide-react';
+import { useAnalysis } from '../contexts/AnalysisContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -85,13 +84,14 @@ const StatCard = ({
 );
 
 const ResultsPage: React.FC = () => {
-  const { theme } = useTheme();
+  const { currentAnalysis } = useAnalysis();
   const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {
     // Animate the improvement score
+    if (!currentAnalysis) return;
     let current = 0;
-    const target = 92;
+    const target = currentAnalysis.score;
     const increment = target / 50;
     const timer = setInterval(() => {
       current += increment;
@@ -104,7 +104,15 @@ const ResultsPage: React.FC = () => {
     }, 30);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [currentAnalysis]);
+
+  if (!currentAnalysis) {
+    return (
+      <PageLayout showBackButton backTo="/analyze" backLabel="Back">
+        <div className="p-6 text-center">No analysis selected.</div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout showBackButton backTo="/analyze" backLabel="Back" className="px-3 py-3 h-screen flex flex-col">
@@ -150,7 +158,7 @@ const ResultsPage: React.FC = () => {
             >
               <div className="flex items-center justify-center gap-4 mb-3">
                 <div className="text-center">
-                  <div className="text-xl font-bold text-red-500">65%</div>
+                  <div className="text-xl font-bold text-red-500">{currentAnalysis?.beforeScore}%</div>
                   <div className="text-xs text-red-500">Before</div>
                 </div>
                 
@@ -162,34 +170,34 @@ const ResultsPage: React.FC = () => {
                 </div>
               </div>
               
-              <div className="text-xl font-bold text-green-600 dark:text-green-400 mb-1">+27% Better!</div>
+              <div className="text-xl font-bold text-green-600 dark:text-green-400 mb-1">+{currentAnalysis?.improvement}% Better!</div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Your resume now shines brighter than ever</p>
             </motion.div>
 
             {/* Stats Grid - Only 4 key metrics */}
             <div className="grid grid-cols-2 gap-2">
-              <StatCard 
+              <StatCard
                 icon={Target}
-                title="Keyword Match" 
-                value="12/12" 
+                title="Keyword Match"
+                value={`${currentAnalysis?.keywordsMatched}/${currentAnalysis?.totalKeywords}`}
                 color="bg-blue-500"
               />
-              <StatCard 
+              <StatCard
                 icon={Zap}
-                title="Readability" 
-                value="A+" 
+                title="Readability"
+                value={currentAnalysis?.readability}
                 color="bg-purple-500"
               />
-              <StatCard 
+              <StatCard
                 icon={CheckCircle}
-                title="ATS Score" 
-                value="98%" 
+                title="ATS Score"
+                value={`${currentAnalysis?.atsScore}%`}
                 color="bg-green-500"
               />
-              <StatCard 
+              <StatCard
                 icon={Star}
-                title="Impact Factor" 
-                value="9.2/10" 
+                title="Impact Factor"
+                value={`${currentAnalysis?.impactFactor}/10`}
                 color="bg-cyan-500"
               />
             </div>
@@ -241,7 +249,9 @@ const ResultsPage: React.FC = () => {
               <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="font-bold text-gray-900 dark:text-white text-sm">Software Engineer Resume - Google</span>
+                  <span className="font-bold text-gray-900 dark:text-white text-sm">
+                    {currentAnalysis ? `${currentAnalysis.position} Resume - ${currentAnalysis.company}` : 'Resume'}
+                  </span>
                 </div>
                 <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-3 py-1 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-1 text-xs">
                   <Download className="w-3 h-3" />

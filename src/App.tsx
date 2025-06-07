@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AnalysisProvider } from './contexts/AnalysisContext';
 import LandingPage from './pages/LandingPage';
 import AnalyzePage from './pages/AnalyzePage';
 import PreviewPage from './pages/PreviewPage';
@@ -12,8 +13,9 @@ import EditProfile from './pages/EditProfile';
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <Routes>
+      <AnalysisProvider>
+        <Router>
+          <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/analyze" element={<AnalyzePage />} />
           <Route path="/results" element={<ResultsPage />} />
@@ -24,6 +26,7 @@ function App() {
           <Route path="/edit-profile" element={<EditProfile />} />
         </Routes>
       </Router>
+      </AnalysisProvider>
     </ThemeProvider>
   );
 }
