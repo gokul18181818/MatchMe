@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -18,7 +18,8 @@ import {
   Edit3,
   Save,
   X,
-  Upload
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
@@ -32,82 +33,25 @@ import {
   NetflixIcon,
   AmazonIcon,
 } from '../components/CompanyLogos';
+import { getFilteredApplications, getApplicationStats } from '../services/applicationService';
+import type { ApplicationHistory, ApplicationStats } from '../services/applicationService';
+import { getDevUserId } from '../utils/tempUser';
 
-interface ResumeHistory {
-  id: string;
-  company: string;
-  position: string;
-  date: string;
-  status: 'pending' | 'interviewed' | 'rejected' | 'offer';
-  score: number;
-  improvement: number;
-  logo: React.ReactNode;
-}
+// Company logo mapping
+const getCompanyLogo = (company: string): React.ReactNode => {
+  const logos: { [key: string]: React.ReactNode } = {
+    'Google': <GoogleIcon className="w-6 h-6" />,
+    'Microsoft': <MicrosoftIcon className="w-6 h-6" />,
+    'Apple': <AppleIcon className="w-6 h-6" />,
+    'Meta': <MetaIcon className="w-6 h-6" />,
+    'Netflix': <NetflixIcon className="w-6 h-6" />,
+    'Amazon': <AmazonIcon className="w-6 h-6" />,
+  };
+  
+  return logos[company] || <Building2 className="w-6 h-6 text-gray-400" />;
+};
 
-const mockHistory: ResumeHistory[] = [
-  {
-    id: '1',
-    company: 'Google',
-    position: 'Software Engineer',
-    date: '2024-01-10',
-    status: 'interviewed',
-    score: 92,
-    improvement: 27,
-    logo: <GoogleIcon className="w-6 h-6" />
-  },
-  {
-    id: '2',
-    company: 'Microsoft',
-    position: 'Senior Developer',
-    date: '2024-01-08',
-    status: 'pending',
-    score: 89,
-    improvement: 23,
-    logo: <MicrosoftIcon className="w-6 h-6" />
-  },
-  {
-    id: '3',
-    company: 'Apple',
-    position: 'iOS Developer',
-    date: '2024-01-05',
-    status: 'offer',
-    score: 95,
-    improvement: 31,
-    logo: <AppleIcon className="w-6 h-6" />
-  },
-  {
-    id: '4',
-    company: 'Meta',
-    position: 'Product Manager',
-    date: '2024-01-03',
-    status: 'rejected',
-    score: 78,
-    improvement: 15,
-    logo: <MetaIcon className="w-6 h-6" />
-  },
-  {
-    id: '5',
-    company: 'Netflix',
-    position: 'Full Stack Engineer',
-    date: '2023-12-28',
-    status: 'interviewed',
-    score: 88,
-    improvement: 25,
-    logo: <NetflixIcon className="w-6 h-6" />
-  },
-  {
-    id: '6',
-    company: 'Amazon',
-    position: 'Cloud Engineer',
-    date: '2023-12-25',
-    status: 'pending',
-    score: 85,
-    improvement: 20,
-    logo: <AmazonIcon className="w-6 h-6" />
-  }
-];
-
-const StatusBadge = ({ status }: { status: ResumeHistory['status'] }) => {
+const StatusBadge = ({ status }: { status: ApplicationHistory['status'] }) => {
   const statusConfig = {
     pending: {
       color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
@@ -128,6 +72,16 @@ const StatusBadge = ({ status }: { status: ResumeHistory['status'] }) => {
       color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
       icon: CheckCircle,
       text: 'Offer Received'
+    },
+    accepted: {
+      color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+      icon: CheckCircle,
+      text: 'Accepted'
+    },
+    declined: {
+      color: 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300',
+      icon: XCircle,
+      text: 'Declined'
     }
   };
 
@@ -145,12 +99,12 @@ const StatusBadge = ({ status }: { status: ResumeHistory['status'] }) => {
   );
 };
 
-const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
+const ResumeHistoryCard = ({ resume }: { resume: ApplicationHistory }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     company: resume.company,
     position: resume.position,
-    date: resume.date,
+    date: resume.application_date,
     status: resume.status
   });
 
@@ -164,7 +118,7 @@ const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
     setEditData({
       company: resume.company,
       position: resume.position,
-      date: resume.date,
+      date: resume.application_date,
       status: resume.status
     });
     setIsEditing(false);
@@ -185,7 +139,7 @@ const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4 flex-1">
           <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
-            {resume.logo}
+            {getCompanyLogo(resume.company)}
           </div>
           <div className="flex-1">
             {isEditing ? (
@@ -226,7 +180,7 @@ const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
                 </div>
                 <select
                   value={editData.status}
-                  onChange={(e) => setEditData({...editData, status: e.target.value as ResumeHistory['status']})}
+                  onChange={(e) => setEditData({...editData, status: e.target.value as ApplicationHistory['status']})}
                   className={cn(
                     "w-full px-3 py-2 rounded-lg border",
                     "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600",
@@ -249,7 +203,7 @@ const ResumeHistoryCard = ({ resume }: { resume: ResumeHistory }) => {
                   <span className="font-medium">{resume.company}</span>
                   <span>•</span>
                   <Calendar className="w-4 h-4" />
-                  <span>{new Date(resume.date).toLocaleDateString()}</span>
+                  <span>{new Date(resume.application_date).toLocaleDateString()}</span>
                 </div>
                 <StatusBadge status={resume.status} />
               </>
@@ -354,32 +308,72 @@ const History: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
+  const [applications, setApplications] = useState<ApplicationHistory[]>([]);
+  const [stats, setStats] = useState<ApplicationStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredHistory = mockHistory
-    .filter(resume => {
-      const matchesSearch = resume.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           resume.position.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || resume.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'date') {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      } else if (sortBy === 'score') {
-        return b.score - a.score;
-      } else if (sortBy === 'company') {
-        return a.company.localeCompare(b.company);
+  // Load applications from database
+  useEffect(() => {
+    const loadApplications = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const userId = getDevUserId();
+        
+        // Get filtered applications
+        const applicationsResult = await getFilteredApplications(userId, {
+          searchTerm: searchTerm || undefined,
+          statusFilter: statusFilter === 'all' ? undefined : statusFilter,
+          sortBy: sortBy as any
+        });
+        
+        // Get stats
+        const statsResult = await getApplicationStats(userId);
+        
+        setApplications(applicationsResult);
+        setStats(statsResult);
+      } catch (err) {
+        console.error('Error loading applications:', err);
+        setError('Failed to load applications');
+      } finally {
+        setLoading(false);
       }
-      return 0;
-    });
+    };
 
-  const stats = {
-    total: mockHistory.length,
-    pending: mockHistory.filter(r => r.status === 'pending').length,
-    interviewed: mockHistory.filter(r => r.status === 'interviewed').length,
-    offers: mockHistory.filter(r => r.status === 'offer').length,
-    avgScore: Math.round(mockHistory.reduce((sum, r) => sum + r.score, 0) / mockHistory.length)
-  };
+    loadApplications();
+  }, [searchTerm, statusFilter, sortBy]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <PageLayout showBackButton backTo="/dashboard" backLabel="Back">
+        <div className="flex items-center justify-center min-h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <span className="ml-2 text-gray-600 dark:text-gray-400">Loading applications...</span>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <PageLayout showBackButton backTo="/dashboard" backLabel="Back">
+        <div className="text-center py-12">
+          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            Error Loading Applications
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout showBackButton backTo="/dashboard" backLabel="Back">
@@ -400,48 +394,50 @@ const History: React.FC = () => {
           </p>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div className={cn(
-              "p-4 rounded-lg border text-center",
-              "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-              "border-gray-200 dark:border-gray-700"
-            )}>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Total Applications</div>
+          {stats && (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+              <div className={cn(
+                "p-4 rounded-lg border text-center",
+                "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+                "border-gray-200 dark:border-gray-700"
+              )}>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Total Applications</div>
+              </div>
+              <div className={cn(
+                "p-4 rounded-lg border text-center",
+                "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+                "border-gray-200 dark:border-gray-700"
+              )}>
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Pending</div>
+              </div>
+              <div className={cn(
+                "p-4 rounded-lg border text-center",
+                "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+                "border-gray-200 dark:border-gray-700"
+              )}>
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.interviewed}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Interviewed</div>
+              </div>
+              <div className={cn(
+                "p-4 rounded-lg border text-center",
+                "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+                "border-gray-200 dark:border-gray-700"
+              )}>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.offers}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Offers</div>
+              </div>
+              <div className={cn(
+                "p-4 rounded-lg border text-center",
+                "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+                "border-gray-200 dark:border-gray-700"
+              )}>
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.avgScore}%</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Avg Score</div>
+              </div>
             </div>
-            <div className={cn(
-              "p-4 rounded-lg border text-center",
-              "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-              "border-gray-200 dark:border-gray-700"
-            )}>
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending}</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Pending</div>
-            </div>
-            <div className={cn(
-              "p-4 rounded-lg border text-center",
-              "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-              "border-gray-200 dark:border-gray-700"
-            )}>
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.interviewed}</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Interviewed</div>
-            </div>
-            <div className={cn(
-              "p-4 rounded-lg border text-center",
-              "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-              "border-gray-200 dark:border-gray-700"
-            )}>
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.offers}</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Offers</div>
-            </div>
-            <div className={cn(
-              "p-4 rounded-lg border text-center",
-              "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-              "border-gray-200 dark:border-gray-700"
-            )}>
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.avgScore}%</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Avg Score</div>
-            </div>
-          </div>
+          )}
         </motion.div>
 
         {/* Filters & Search */}
@@ -498,19 +494,19 @@ const History: React.FC = () => {
 
         {/* Resume History Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredHistory.map((resume, index) => (
+          {applications.map((application, index) => (
             <motion.div
-              key={resume.id}
+              key={application.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
-              <ResumeHistoryCard resume={resume} />
+              <ResumeHistoryCard resume={application} />
             </motion.div>
           ))}
         </div>
 
-        {filteredHistory.length === 0 && (
+        {applications.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

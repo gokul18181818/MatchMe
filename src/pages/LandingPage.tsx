@@ -105,7 +105,17 @@ const LandingPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          <Link to="/analyze">
+          <Link to="/login">
+            <Button className={cn(
+              "rounded-full px-4 py-2 font-medium transition-all duration-300",
+              theme === "dark" 
+                ? "text-white hover:bg-zinc-800" 
+                : "text-zinc-900 hover:bg-zinc-100"
+            )}>
+              Sign In
+            </Button>
+          </Link>
+          <Link to="/signup">
             <Button className={cn(
               "rounded-full px-6 py-2 font-semibold transition-all duration-300",
               theme === "dark" 
@@ -172,19 +182,21 @@ const LandingPage: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <Link to="/analyze">
+            <Link to="/signup">
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
-                Analyze My Resume
+                Get Started Free
               </Button>
             </Link>
-            <Button className={cn(
-              "font-semibold px-8 py-4 text-lg rounded-full border-2 transition-all duration-300",
-              theme === "dark" 
-                ? "border-zinc-700 text-white hover:bg-zinc-800" 
-                : "border-zinc-300 text-zinc-900 hover:bg-zinc-100"
-            )}>
-              Watch Demo
-            </Button>
+            <Link to="/login">
+              <Button className={cn(
+                "font-semibold px-8 py-4 text-lg rounded-full border-2 transition-all duration-300",
+                theme === "dark" 
+                  ? "border-zinc-700 text-white hover:bg-zinc-800" 
+                  : "border-zinc-300 text-zinc-900 hover:bg-zinc-100"
+              )}>
+                Sign In
+              </Button>
+            </Link>
           </motion.div>
 
           {/* Stats */}

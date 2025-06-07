@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -13,12 +13,16 @@ import {
   Mail,
   Calendar,
   BarChart3,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
+import { getApplicationStats } from '../services/applicationService';
+import { getDevUserId } from '../utils/tempUser';
+import type { ApplicationStats } from '../services/applicationService';
 
 const StatCard = ({ 
   icon: Icon, 
@@ -66,6 +70,24 @@ const StatCard = ({
 
 const Dashboard: React.FC = () => {
   const { theme } = useTheme();
+  const [stats, setStats] = useState<ApplicationStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const userId = getDevUserId();
+        const statsResult = await getApplicationStats(userId);
+        setStats(statsResult);
+      } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, []);
 
   return (
     <PageLayout showBackButton backTo="/results" backLabel="Back">
@@ -136,38 +158,47 @@ const Dashboard: React.FC = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <StatCard 
-                icon={FileText}
-                title="Resumes Analyzed"
-                value="12"
-                subtitle="This month"
-                color="bg-blue-500"
-                trend="+25%"
-              />
-              <StatCard 
-                icon={TrendingUp}
-                title="Avg. Improvement"
-                value="34%"
-                subtitle="Score increase"
-                color="bg-green-500"
-                trend="+8%"
-              />
-              <StatCard 
-                icon={Target}
-                title="Applications Sent"
-                value="8"
-                subtitle="Active applications"
-                color="bg-purple-500"
-                trend="+12%"
-              />
-              <StatCard 
-                icon={Award}
-                title="Interview Rate"
-                value="75%"
-                subtitle="Success rate"
-                color="bg-cyan-500"
-                trend="+15%"
-              />
+              {loading ? (
+                <div className="md:col-span-2 flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">Loading stats...</span>
+                </div>
+              ) : stats ? (
+                <>
+                  <StatCard 
+                    icon={Target}
+                    title="Total Applications"
+                    value={stats.total}
+                    subtitle="Applications sent"
+                    color="bg-blue-500"
+                  />
+                  <StatCard 
+                    icon={TrendingUp}
+                    title="Avg. Resume Score"
+                    value={`${stats.avgScore}%`}
+                    subtitle="Resume quality"
+                    color="bg-green-500"
+                  />
+                  <StatCard 
+                    icon={FileText}
+                    title="Pending Reviews"
+                    value={stats.pending}
+                    subtitle="Awaiting response"
+                    color="bg-yellow-500"
+                  />
+                  <StatCard 
+                    icon={Award}
+                    title="Success Rate"
+                    value={stats.total > 0 ? `${Math.round(((stats.offers + stats.accepted) / stats.total) * 100)}%` : '0%'}
+                    subtitle="Offers received"
+                    color="bg-cyan-500"
+                  />
+                </>
+              ) : (
+                <div className="md:col-span-2 text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">No application data available</p>
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
