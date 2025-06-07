@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { GlobalWorkerOptions, getDocument, version as pdfjsVersion } from 'pdfjs-dist';
+import mammoth from 'mammoth';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -13,22 +15,78 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
   const { theme } = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
+    setError(null);
+
+    if (!file) {
+      setSelectedFile(null);
+      onFileSelect(null);
+      return;
+    }
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      setError('Unsupported file type. Please upload PDF or DOCX.');
+      setSelectedFile(null);
+      onFileSelect(null);
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      setError('File size exceeds 5MB limit.');
+      setSelectedFile(null);
+      onFileSelect(null);
+      return;
+    }
+
     setSelectedFile(file);
     onFileSelect(file);
-    
-    if (file) {
-      setResumeText(''); // Clear text when file is selected
-      onTextChange(''); // Update parent component
+
+    try {
+      let text = '';
+      if (file.type === 'application/pdf') {
+        GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await getDocument({ data: arrayBuffer }).promise;
+        const pageTexts = await Promise.all(
+          Array.from({ length: pdf.numPages }, async (_, i) => {
+            const page = await pdf.getPage(i + 1);
+            const content = await page.getTextContent();
+            return content.items
+              .map((item: any) => ('str' in item ? (item as any).str : ''))
+              .join(' ');
+          })
+        );
+        text = pageTexts.join('\n');
+      } else {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        text = result.value;
+      }
+      setResumeText(text);
+      onTextChange(text);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to parse resume file.');
+      setSelectedFile(null);
+      onFileSelect(null);
     }
   };
 
   const handleTextChange = (text: string) => {
+    setError(null);
     setResumeText(text);
     onTextChange(text); // Update parent component
-    
+
     if (text.trim()) {
       setSelectedFile(null); // Clear file when text is entered
       onFileSelect(null); // Update parent component
@@ -103,7 +161,7 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
             id="resume-upload"
             onChange={handleFileChange}
           />
-          <label 
+          <label
             htmlFor="resume-upload"
             className={cn(
               "inline-block px-6 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300",
@@ -114,6 +172,9 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
           >
             {selectedFile ? 'Change File' : 'Choose File'}
           </label>
+          {error && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
         </div>
 
         {/* Divider */}
