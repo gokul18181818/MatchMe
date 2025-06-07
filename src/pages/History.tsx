@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Search,
@@ -19,9 +19,11 @@ import {
   Save,
   X,
   Upload,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -35,7 +37,6 @@ import {
 } from '../components/CompanyLogos';
 import { getFilteredApplications, getApplicationStats } from '../services/applicationService';
 import type { ApplicationHistory, ApplicationStats } from '../services/applicationService';
-import { getDevUserId } from '../utils/tempUser';
 
 // Company logo mapping
 const getCompanyLogo = (company: string): React.ReactNode => {
@@ -305,6 +306,8 @@ const FilterDropdown = ({
 
 const History: React.FC = () => {
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
@@ -312,41 +315,66 @@ const History: React.FC = () => {
   const [stats, setStats] = useState<ApplicationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Load applications from database
-  useEffect(() => {
-    const loadApplications = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const userId = getDevUserId();
-        
-        // Get filtered applications
-        const applicationsResult = await getFilteredApplications(userId, {
-          searchTerm: searchTerm || undefined,
-          statusFilter: statusFilter === 'all' ? undefined : statusFilter,
-          sortBy: sortBy as any
-        });
-        
-        // Get stats
-        const statsResult = await getApplicationStats(userId);
-        
-        setApplications(applicationsResult);
-        setStats(statsResult);
-      } catch (err) {
-        console.error('Error loading applications:', err);
-        setError('Failed to load applications');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadApplications = async (showRefreshing = false) => {
+    if (!user?.id) {
+      setError('User not authenticated');
+      setLoading(false);
+      return;
+    }
 
+    try {
+      if (showRefreshing) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+      
+      // Get filtered applications
+      const applicationsResult = await getFilteredApplications(user.id, {
+        searchTerm: searchTerm || undefined,
+        statusFilter: statusFilter === 'all' ? undefined : statusFilter,
+        sortBy: sortBy as any
+      });
+      
+      // Get stats
+      const statsResult = await getApplicationStats(user.id);
+      
+      setApplications(applicationsResult);
+      setStats(statsResult);
+    } catch (err) {
+      console.error('Error loading applications:', err);
+      setError('Failed to load applications');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
     loadApplications();
-  }, [searchTerm, statusFilter, sortBy]);
+  }, [user?.id, searchTerm, statusFilter, sortBy]);
+
+  // Check if we're coming from a successful analysis (new application created)
+  useEffect(() => {
+    if (location.state?.newApplicationCreated) {
+      // Refresh the data to show the new application
+      setTimeout(() => {
+        loadApplications(true);
+      }, 500);
+    }
+  }, [location.state]);
+
+  // Manual refresh function
+  const handleRefresh = () => {
+    loadApplications(true);
+  };
 
   // Show loading state
-  if (loading) {
+  if (loading && !refreshing) {
     return (
       <PageLayout showBackButton backTo="/dashboard" backLabel="Back">
         <div className="flex items-center justify-center min-h-64">
@@ -367,7 +395,7 @@ const History: React.FC = () => {
             Error Loading Applications
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
-          <Button onClick={() => window.location.reload()}>
+          <Button onClick={handleRefresh}>
             Try Again
           </Button>
         </div>
@@ -386,9 +414,19 @@ const History: React.FC = () => {
           transition={{ duration: 0.8 }}
           className="mb-8"
         >
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Resume History 📋
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Resume History 📋
+            </h2>
+            <Button 
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0"
+            >
+              <RefreshCw className={cn("w-4 h-4 mr-2", refreshing && "animate-spin")} />
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Track your applications and see how your resumes performed
           </p>

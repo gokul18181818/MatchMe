@@ -169,7 +169,7 @@ const ResultsPage: React.FC = () => {
                 </p>
               </div>
               <div className="ml-auto">
-                <Link to="/history">
+                <Link to="/history" state={{ newApplicationCreated: true }}>
                   <Button className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2">
                     <FileText className="w-4 h-4 mr-2" />
                     View Applications
@@ -486,7 +486,7 @@ const ResultsPage: React.FC = () => {
               Analyze Another Resume
             </Button>
           </Link>
-          <Link to="/history">
+          <Link to="/history" state={showApplicationSuccess ? { newApplicationCreated: true } : undefined}>
             <Button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3">
               <FileText className="w-4 h-4 mr-2" />
               View All Applications
