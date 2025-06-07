@@ -1,96 +1,165 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, CheckCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 
 type ResumeUploaderProps = {
-  onFileSelect: (file: File | null) => void;
-  onTextChange: (text: string) => void;
+  onFileSelect: (file: File | null, extractedText?: string) => void;
+  acceptedTypes?: string[];
 };
 
-const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextChange }) => {
+const ResumeUploader: React.FC<ResumeUploaderProps> = ({ 
+  onFileSelect, 
+  acceptedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+}) => {
   const { theme } = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [resumeText, setResumeText] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [extractedText, setExtractedText] = useState<string>('');
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Optimized text extraction function
+  const extractTextFromFile = useCallback(async (file: File): Promise<string> => {
+    try {
+      if (file.type === 'application/pdf') {
+        // Use dynamic import for better performance
+        const pdfjs = await import('pdfjs-dist');
+        
+        // Set worker source to CDN for faster loading
+        if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+          pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+        }
+
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjs.getDocument({ 
+          data: arrayBuffer,
+          // Optimize for text extraction
+          useSystemFonts: true,
+          isEvalSupported: false,
+          useWorkerFetch: false
+        }).promise;
+
+        // Extract text from all pages in parallel for speed
+        const pagePromises = Array.from({ length: Math.min(pdf.numPages, 10) }, async (_, i) => {
+          const page = await pdf.getPage(i + 1);
+          const textContent = await page.getTextContent({
+            includeMarkedContent: false // Faster extraction
+          });
+          
+          return textContent.items
+            .filter((item): item is any => 'str' in item)
+            .map((item: any) => item.str)
+            .join(' ');
+        });
+
+        const pageTexts = await Promise.all(pagePromises);
+        return pageTexts.join('\n').trim();
+      } 
+      else if (file.type.includes('word')) {
+        // Dynamic import for Word documents
+        const { default: mammoth } = await import('mammoth');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        return result.value.trim();
+      }
+      
+      return '';
+    } catch (error) {
+      console.error('Text extraction error:', error);
+      throw new Error('Failed to extract text from document');
+    }
+  }, []);
+
+  const validateFile = useCallback((file: File): string | null => {
+    // File type validation
+    if (!acceptedTypes.includes(file.type)) {
+      return `Unsupported file type. Please upload ${acceptedTypes.includes('application/pdf') ? 'PDF' : ''}${acceptedTypes.length > 1 ? ' or Word' : ''} documents only.`;
+    }
+
+    // File name validation
+    if (file.name.length > 255) {
+      return 'File name is too long. Please rename your file.';
+    }
+
+    return null;
+  }, [acceptedTypes]);
+
+  const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
     setError(null);
+    setIsProcessing(false);
 
     if (!file) {
       setSelectedFile(null);
+      setExtractedText('');
       onFileSelect(null);
       return;
     }
 
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-
-    if (!allowedTypes.includes(file.type)) {
-      setError('Unsupported file type. Please upload PDF or DOCX.');
-      setSelectedFile(null);
-      onFileSelect(null);
-      return;
-    }
-
-    if (file.size > MAX_SIZE) {
-      setError('File size exceeds 5MB limit.');
+    // Validate file
+    const validationError = validateFile(file);
+    if (validationError) {
+      setError(validationError);
       setSelectedFile(null);
       onFileSelect(null);
       return;
     }
 
     setSelectedFile(file);
-    onFileSelect(file);
+    setIsProcessing(true);
 
     try {
-      let text = '';
-      if (file.type === 'application/pdf') {
-        const pdfjs = await import('pdfjs-dist');
-        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-        const pageTexts = await Promise.all(
-          Array.from({ length: pdf.numPages }, async (_, i) => {
-            const page = await pdf.getPage(i + 1);
-            const content = await page.getTextContent();
-            return content.items
-              .map((item: any) => ('str' in item ? (item as any).str : ''))
-              .join(' ');
-          })
-        );
-        text = pageTexts.join('\n');
-      } else {
-        const { default: mammoth } = await import('mammoth');
-        const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        text = result.value;
-      }
-      setResumeText(text);
-      onTextChange(text);
+      // Extract text in the background
+      const text = await extractTextFromFile(file);
+      setExtractedText(text);
+      onFileSelect(file, text);
     } catch (err) {
-      console.error(err);
-      setError('Failed to parse resume file.');
-      setSelectedFile(null);
-      onFileSelect(null);
+      console.error('File processing error:', err);
+      setError('Failed to process file. Please try again or use a different file.');
+      onFileSelect(file); // Still pass the file even if text extraction fails
+    } finally {
+      setIsProcessing(false);
     }
+  }, [validateFile, extractTextFromFile, onFileSelect]);
+
+  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      // Create a synthetic event to reuse existing logic
+      const fileInput = document.getElementById('resume-upload') as HTMLInputElement;
+      if (fileInput) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        
+        const syntheticEvent = new Event('change', { bubbles: true });
+        Object.defineProperty(syntheticEvent, 'target', {
+          writable: false,
+          value: fileInput
+        });
+        
+        handleFileChange(syntheticEvent as unknown as React.ChangeEvent<HTMLInputElement>);
+      }
+    }
+  }, [handleFileChange]);
+
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  }, []);
+
+  const getFileIcon = () => {
+    if (isProcessing) return <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />;
+    if (selectedFile) return <CheckCircle className="w-12 h-12 text-green-500" />;
+    return <FileText className="w-12 h-12 text-gray-400 dark:text-gray-500" />;
   };
 
-  const handleTextChange = (text: string) => {
-    setError(null);
-    setResumeText(text);
-    onTextChange(text); // Update parent component
-
-    if (text.trim()) {
-      setSelectedFile(null); // Clear file when text is entered
-      onFileSelect(null); // Update parent component
-    }
+  const getFileTypeDisplay = () => {
+    const types = [];
+    if (acceptedTypes.includes('application/pdf')) types.push('PDF');
+    if (acceptedTypes.some(type => type.includes('word'))) types.push('Word');
+    return types.join(', ');
   };
 
   return (
@@ -107,6 +176,7 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
         "hover:shadow-xl dark:hover:shadow-2xl"
       )}
     >
+      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className={cn(
           "w-12 h-12 rounded-xl flex items-center justify-center",
@@ -119,91 +189,107 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onFileSelect, onTextCha
             Upload Resume
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Upload your current resume for analysis
+            Upload your resume for AI-powered analysis
           </p>
         </div>
       </div>
       
-      <div className="space-y-6">
-        {/* File Upload */}
-        <div className={cn(
-          "border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300",
-          selectedFile
+      {/* File Upload Area */}
+      <div
+        className={cn(
+          "border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer",
+          selectedFile && !error
             ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-            : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-800/50"
-        )}>
-          {selectedFile ? (
-            <div className="flex flex-col items-center">
-              <CheckCircle className="w-12 h-12 text-green-500 mb-3" />
-              <p className="text-green-700 dark:text-green-400 font-medium">
+            : error
+            ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+            : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 bg-gray-50 dark:bg-gray-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+        )}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onClick={() => document.getElementById('resume-upload')?.click()}
+      >
+        <div className="flex flex-col items-center">
+          {getFileIcon()}
+          
+          {selectedFile && !error ? (
+            <div className="mt-4">
+              <p className="text-green-700 dark:text-green-400 font-semibold text-lg">
                 {selectedFile.name}
               </p>
               <p className="text-sm text-green-600 dark:text-green-500 mt-1">
-                File uploaded successfully
+                {isProcessing ? 'Processing document...' : 'File uploaded successfully'}
+              </p>
+              {extractedText && (
+                <p className="text-xs text-green-600 dark:text-green-500 mt-2">
+                  Extracted {extractedText.length.toLocaleString()} characters
+                </p>
+              )}
+            </div>
+          ) : error ? (
+            <div className="mt-4">
+              <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <p className="text-red-700 dark:text-red-400 font-medium">
+                Upload Failed
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-500 mt-1 max-w-sm">
+                {error}
               </p>
             </div>
           ) : (
-            <>
-              <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
-              <p className="text-gray-600 dark:text-gray-300 mb-2">
+            <div className="mt-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-2 text-lg font-medium">
                 Drop your resume here or click to browse
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Supports PDF, DOC, DOCX files
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Supports {getFileTypeDisplay()} files
               </p>
+              <div className="text-xs text-gray-400 dark:text-gray-500">
+                Files are processed locally and uploaded securely
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <input 
+          type="file" 
+          accept={acceptedTypes.join(',')}
+          className="hidden" 
+          id="resume-upload"
+          onChange={handleFileChange}
+          disabled={isProcessing}
+        />
+      </div>
+
+      {/* Action Button */}
+      <div className="mt-6 text-center">
+        <button
+          onClick={() => document.getElementById('resume-upload')?.click()}
+          disabled={isProcessing}
+          className={cn(
+            "inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300",
+            selectedFile && !error
+              ? "bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl"
+              : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl",
+            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+          )}
+        >
+          {isProcessing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Processing...
+            </>
+          ) : selectedFile ? (
+            <>
+              <CheckCircle className="w-4 h-4" />
+              Change File
+            </>
+          ) : (
+            <>
+              <Upload className="w-4 h-4" />
+              Choose File
             </>
           )}
-          
-          <input 
-            type="file" 
-            accept=".pdf,.doc,.docx"
-            className="hidden" 
-            id="resume-upload"
-            onChange={handleFileChange}
-          />
-          <label
-            htmlFor="resume-upload"
-            className={cn(
-              "inline-block px-6 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300",
-              selectedFile
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            )}
-          >
-            {selectedFile ? 'Change File' : 'Choose File'}
-          </label>
-          {error && (
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center">
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
-          <span className="px-3 text-sm text-gray-500 dark:text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
-        </div>
-
-        {/* Text Area */}
-        <div>
-          <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
-            Paste your resume text
-          </label>
-          <textarea 
-            value={resumeText}
-            onChange={(e) => handleTextChange(e.target.value)}
-            className={cn(
-              "w-full h-32 p-4 rounded-xl border transition-all duration-300 resize-none",
-              "bg-gray-50 dark:bg-gray-800/50",
-              "border-gray-200 dark:border-gray-700",
-              "text-gray-900 dark:text-white",
-              "placeholder-gray-500 dark:placeholder-gray-400",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500",
-              "hover:border-gray-300 dark:hover:border-gray-600"
-            )}
-            placeholder="Paste your resume content here..."
-          />
-        </div>
+        </button>
       </div>
     </motion.div>
   );

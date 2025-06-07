@@ -88,7 +88,7 @@ const EditProfile: React.FC = () => {
             </Button>
             
             <p className="text-xs text-zinc-500 dark:text-zinc-500 text-center">
-              JPG, PNG or GIF. Max size 5MB.
+              JPG, PNG or GIF files supported.
             </p>
           </div>
         </motion.div>

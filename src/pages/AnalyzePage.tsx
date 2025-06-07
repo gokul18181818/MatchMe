@@ -21,6 +21,11 @@ const AnalyzePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const handleResumeFileSelect = (file: File | null, extractedText?: string) => {
+    setResumeFile(file);
+    setResumeText(extractedText || '');
+  };
+
   const handleAnalyze = async () => {
     if (!user?.id) {
       console.error('User not authenticated');
@@ -85,7 +90,6 @@ const AnalyzePage: React.FC = () => {
   return (
     <PageLayout showBackButton backTo="/dashboard" backLabel="Back to Dashboard">
       <div>
-
         {/* Main Content */}
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -106,8 +110,7 @@ const AnalyzePage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Resume Upload */}
             <ResumeUploader 
-              onFileSelect={setResumeFile} 
-              onTextChange={setResumeText}
+              onFileSelect={handleResumeFileSelect}
             />
 
             {/* Job Description */}
@@ -115,81 +118,93 @@ const AnalyzePage: React.FC = () => {
           </div>
 
           {/* Preview Section */}
-          {hasJobUrl && (
+          {canAnalyze && (previewCompany || previewPosition) && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
+              transition={{ duration: 0.4 }}
+              className={cn(
+                "p-6 rounded-xl mb-8 border",
+                "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+              )}
             >
-              <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
-                Application Preview:
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                Analysis Preview
               </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-400">
-                <span className="font-medium">{previewPosition}</span> at <span className="font-medium">{previewCompany}</span>
-              </p>
-              <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">
-                This will be automatically saved to your applications with "Pending" status
-              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {previewCompany && (
+                  <div>
+                    <span className="text-blue-700 dark:text-blue-300 font-medium">Company: </span>
+                    <span className="text-blue-800 dark:text-blue-200">{previewCompany}</span>
+                  </div>
+                )}
+                {previewPosition && (
+                  <div>
+                    <span className="text-blue-700 dark:text-blue-300 font-medium">Position: </span>
+                    <span className="text-blue-800 dark:text-blue-200">{previewPosition}</span>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
 
-          {/* Analyze Button */}
+          {/* Action Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex justify-center"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-center"
           >
             <Button
               onClick={handleAnalyze}
               disabled={!canAnalyze || isAnalyzing}
               className={cn(
                 "px-12 py-4 text-lg font-semibold rounded-xl transition-all duration-300",
-                "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700",
-                "text-white shadow-xl hover:shadow-2xl",
-                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-xl",
-                "flex items-center space-x-3",
-                "min-w-[250px]"
+                canAnalyze
+                  ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
+                  : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed",
+                isAnalyzing && "animate-pulse"
               )}
             >
-              {showSuccess ? (
-                <>
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span>Application Saved!</span>
-                </>
-              ) : isAnalyzing ? (
-                <>
-                  <Loader className="w-5 h-5 animate-spin" />
-                  <span>Analyzing & Saving...</span>
-                </>
+              {isAnalyzing ? (
+                showSuccess ? (
+                  <>
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Analysis Complete!
+                  </>
+                ) : (
+                  <>
+                    <Loader className="w-5 h-5 mr-2 animate-spin" />
+                    Analyzing Resume...
+                  </>
+                )
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5" />
-                  <span>Analyze & Save Application</span>
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Analyze Resume
                 </>
               )}
             </Button>
-          </motion.div>
 
-          {/* Status Indicator */}
-          {!canAnalyze && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="text-center text-gray-500 dark:text-gray-400 mt-4"
-            >
-              {!hasResumeContent && !hasJobUrl && 
-                "Please upload your resume and add a LinkedIn job posting URL to continue"
-              }
-              {!hasResumeContent && hasJobUrl && 
-                "Please upload your resume or paste resume text to continue"
-              }
-              {hasResumeContent && !hasJobUrl && 
-                "Please add a LinkedIn job posting URL to continue"
-              }
-            </motion.p>
-          )}
+            {!canAnalyze && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="text-center text-gray-500 dark:text-gray-400 mt-4"
+              >
+                {!hasResumeContent && !hasJobUrl && 
+                  "Please upload your resume and add a LinkedIn job posting URL to continue"
+                }
+                {!hasResumeContent && hasJobUrl && 
+                  "Please upload your resume to continue"
+                }
+                {hasResumeContent && !hasJobUrl && 
+                  "Please add a LinkedIn job posting URL to continue"
+                }
+              </motion.p>
+            )}
+          </motion.div>
         </div>
       </div>
     </PageLayout>
