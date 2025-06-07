@@ -22,52 +22,138 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({
   // Optimized text extraction function
   const extractTextFromFile = useCallback(async (file: File): Promise<string> => {
     try {
+      console.log('Starting text extraction from file:', file.name, 'Type:', file.type);
+      
       if (file.type === 'application/pdf') {
-        // Use dynamic import for better performance
-        const pdfjs = await import('pdfjs-dist');
-        
-        // Set worker source to CDN for faster loading
-        if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-          pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-        }
-
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ 
-          data: arrayBuffer,
-          // Optimize for text extraction
-          useSystemFonts: true,
-          isEvalSupported: false,
-          useWorkerFetch: false
-        }).promise;
-
-        // Extract text from all pages in parallel for speed
-        const pagePromises = Array.from({ length: Math.min(pdf.numPages, 10) }, async (_, i) => {
-          const page = await pdf.getPage(i + 1);
-          const textContent = await page.getTextContent({
-            includeMarkedContent: false // Faster extraction
-          });
+        try {
+          // Try PDF.js first, but fall back immediately if worker issues occur
+          const pdfjs = await import('pdfjs-dist');
           
-          return textContent.items
-            .filter((item): item is any => 'str' in item)
-            .map((item: any) => item.str)
-            .join(' ');
-        });
+          // Try to use a simple worker configuration
+          pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+          
+          console.log('Attempting PDF.js extraction...');
 
-        const pageTexts = await Promise.all(pagePromises);
-        return pageTexts.join('\n').trim();
+          const arrayBuffer = await file.arrayBuffer();
+          console.log('PDF file size:', arrayBuffer.byteLength, 'bytes');
+          
+          const pdf = await pdfjs.getDocument({ 
+            data: arrayBuffer,
+            useSystemFonts: true,
+            isEvalSupported: false,
+            verbosity: 0
+          }).promise;
+
+          console.log('PDF loaded successfully. Pages:', pdf.numPages);
+
+          // Extract text from first few pages only to avoid timeouts
+          const maxPages = Math.min(pdf.numPages, 5);
+          const pageTexts: string[] = [];
+          
+          for (let i = 1; i <= maxPages; i++) {
+            try {
+              const page = await pdf.getPage(i);
+              const textContent = await page.getTextContent({
+                includeMarkedContent: false
+              });
+              
+              const pageText = textContent.items
+                .filter((item): item is any => 'str' in item)
+                .map((item: any) => item.str)
+                .join(' ')
+                .trim();
+                
+              if (pageText.length > 0) {
+                pageTexts.push(pageText);
+              }
+            } catch (pageError) {
+              console.warn(`Could not extract text from page ${i}:`, pageError);
+            }
+          }
+
+          const fullText = pageTexts.join('\n').trim();
+          
+          if (fullText.length > 0) {
+            console.log('PDF.js extraction successful. Total characters:', fullText.length);
+            return fullText;
+          } else {
+            throw new Error('No text extracted via PDF.js');
+          }
+        } catch (pdfJsError) {
+          console.log('PDF.js failed, trying fallback extraction:', pdfJsError);
+          // Fall back to simple text extraction
+          return await extractTextFallback(file);
+        }
       } 
       else if (file.type.includes('word')) {
+        console.log('Processing Word document');
         // Dynamic import for Word documents
         const { default: mammoth } = await import('mammoth');
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
+        
+        console.log('Word document extraction complete. Characters:', result.value.length);
+        
+        if (result.value.trim().length === 0) {
+          throw new Error('No text content found in Word document.');
+        }
+        
         return result.value.trim();
       }
-      
-      return '';
+      else {
+        throw new Error(`Unsupported file type: ${file.type}`);
+      }
     } catch (error) {
       console.error('Text extraction error:', error);
-      throw new Error('Failed to extract text from document');
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('No text content found')) {
+          throw error; // Re-throw our custom errors
+        } else if (error.message.includes('Invalid PDF')) {
+          throw new Error('Invalid PDF file. Please ensure the file is not corrupted.');
+        } else if (error.message.includes('network')) {
+          throw new Error('Network error while processing file. Please check your connection and try again.');
+        }
+      }
+      
+      throw new Error(`Failed to extract text from document: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, []);
+
+  // Fallback PDF extraction without worker
+  const extractTextFallback = useCallback(async (file: File): Promise<string> => {
+    try {
+      console.log('Using fallback PDF extraction method...');
+      
+      // Simple text extraction fallback
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      // Convert to string and look for text patterns
+      let text = '';
+      let decoded = new TextDecoder('utf-8', { fatal: false }).decode(uint8Array);
+      
+      // Extract readable text using regex patterns
+      const textMatches = decoded.match(/[A-Za-z0-9\s\.\,\;\:\!\?\-\(\)]+/g);
+      if (textMatches) {
+        text = textMatches
+          .filter(match => match.trim().length > 2) // Filter out short matches
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+      
+      if (text.length < 50) {
+        throw new Error('Unable to extract readable text from this PDF. The document might be image-based or encrypted.');
+      }
+      
+      console.log('Fallback extraction complete. Characters:', text.length);
+      return text;
+      
+    } catch (error) {
+      console.error('Fallback extraction failed:', error);
+      throw new Error('PDF text extraction failed. Please try a different PDF file or convert it to a text-based format.');
     }
   }, []);
 

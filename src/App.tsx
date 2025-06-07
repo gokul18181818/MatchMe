@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { FormProvider } from './contexts/FormContext';
 import { AuthProvider } from './contexts/AuthContext';
+import AuthGuard from './components/AuthGuard';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -78,22 +79,27 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <FormProvider>
-            <Router>
+            <Router
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+              }}
+            >
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/signup" element={<SignupPage />} />
-                  <Route path="/welcome" element={<WelcomePage />} />
-                  <Route path="/analyze" element={<AnalyzePage />} />
-                  <Route path="/results" element={<ResultsPage />} />
-                  <Route path="/preview" element={<PreviewPage />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/history" element={<History />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/edit-profile" element={<EditProfile />} />
-                  <Route path="/subscription" element={<Subscription />} />
-                  <Route path="/test-database" element={<TestDatabasePage />} />
+                  <Route path="/welcome" element={<AuthGuard><WelcomePage /></AuthGuard>} />
+                  <Route path="/analyze" element={<AuthGuard><AnalyzePage /></AuthGuard>} />
+                  <Route path="/results" element={<AuthGuard><ResultsPage /></AuthGuard>} />
+                  <Route path="/preview" element={<AuthGuard><PreviewPage /></AuthGuard>} />
+                  <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
+                  <Route path="/history" element={<AuthGuard><History /></AuthGuard>} />
+                  <Route path="/settings" element={<AuthGuard><Settings /></AuthGuard>} />
+                  <Route path="/edit-profile" element={<AuthGuard><EditProfile /></AuthGuard>} />
+                  <Route path="/subscription" element={<AuthGuard><Subscription /></AuthGuard>} />
+                  <Route path="/test-database" element={<AuthGuard><TestDatabasePage /></AuthGuard>} />
                 </Routes>
               </Suspense>
             </Router>

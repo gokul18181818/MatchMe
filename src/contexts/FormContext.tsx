@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from './AuthContext';
 import { getUserProfile, updateUserProfile, getUserSettings, updateUserSettings, migrateLocalStorageToDatabase } from '../services/userService';
-import { getDevUserId } from '../utils/tempUser';
 
 export interface ProfileData {
   firstName: string;
@@ -75,24 +75,23 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
   const [profileData, setProfileData] = useState<ProfileData>(defaultProfileData);
   const [settingsData, setSettingsData] = useState<SettingsData>(defaultSettingsData);
   const [isLoading, setIsLoading] = useState(true);
-  const userId = getDevUserId();
+  const { user } = useAuth();
 
   // Load data from database on mount
   useEffect(() => {
     const loadData = async () => {
+      if (!user?.id) return;
+      
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        
-        // First migrate any localStorage data
-        await migrateLocalStorageToDatabase(userId);
-        
         // Load profile data
-        const profile = await getUserProfile(userId);
+        const profile = await getUserProfile(user.id);
         if (profile) {
-          setProfileData({
+          setProfileData(prev => ({
+            ...prev,
             firstName: profile.first_name || '',
             lastName: profile.last_name || '',
-            email: 'john.smith@email.com', // We'll get this from auth later
+            email: user.email || '',
             phone: profile.phone || '',
             location: profile.location || '',
             birthDate: profile.birth_date || '',
@@ -103,18 +102,18 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
             github: profile.github_username || '',
             linkedin: profile.linkedin_username || '',
             twitter: profile.twitter_username || '',
-          });
+          }));
         }
 
-        // Load settings data
-        const settings = await getUserSettings(userId);
+        // Load settings data  
+        const settings = await getUserSettings(user.id);
         if (settings) {
-          setSettingsData({
+          setSettingsData(prev => ({
+            ...prev,
             fullName: settings.full_name || '',
             email: settings.display_email || '',
-            password: '',
             showPassword: settings.show_password || false,
-          });
+          }));
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -124,20 +123,28 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
     };
 
     loadData();
-  }, [userId]);
+  }, [user?.id]);
 
   const updateProfileData = (field: keyof ProfileData, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const updateSettingsData = (field: keyof SettingsData, value: string | boolean) => {
-    setSettingsData(prev => ({ ...prev, [field]: value }));
+    setSettingsData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const saveToDatabase = async () => {
+  const saveData = async () => {
+    if (!user?.id) return;
+    
     try {
       // Save profile data
-      await updateUserProfile(userId, {
+      await updateUserProfile(user.id, {
         first_name: profileData.firstName,
         last_name: profileData.lastName,
         phone: profileData.phone,
@@ -153,15 +160,15 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
       });
 
       // Save settings data
-      await updateUserSettings(userId, {
+      await updateUserSettings(user.id, {
         full_name: settingsData.fullName,
         display_email: settingsData.email,
         show_password: settingsData.showPassword,
       });
 
-      console.log('Data saved to database successfully');
+      console.log('Data saved successfully');
     } catch (error) {
-      console.error('Error saving data to database:', error);
+      console.error('Error saving data:', error);
     }
   };
 
@@ -172,7 +179,7 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
       settingsData, 
       updateSettingsData,
       isLoading,
-      saveToDatabase
+      saveToDatabase: saveData
     }}>
       {children}
     </FormContext.Provider>

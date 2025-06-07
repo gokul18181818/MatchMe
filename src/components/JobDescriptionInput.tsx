@@ -39,7 +39,7 @@ const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ value, onChan
             LinkedIn Job Posting
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Paste the LinkedIn job posting URL to analyze requirements
+            Paste any LinkedIn job URL - we'll simulate job analysis with demo data
           </p>
         </div>
       </div>
@@ -62,8 +62,8 @@ const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ value, onChan
         />
         
         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>We'll automatically extract job requirements and keywords</span>
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+          <span>Demo mode: We'll simulate job analysis with sample data for any LinkedIn URL</span>
         </div>
       </div>
     </motion.div>
