@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Camera, 
@@ -17,30 +17,17 @@ import {
   X
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useFormContext, type ProfileData } from '../contexts/FormContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
 
 const EditProfile: React.FC = () => {
   const { theme } = useTheme();
-  const [profileData, setProfileData] = useState({
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@email.com',
-    phone: '+1 (555) 123-4567',
-    location: 'San Francisco, CA',
-    birthDate: '1995-03-15',
-    jobTitle: 'Software Engineer',
-    company: 'Tech Corp',
-    bio: 'Passionate software engineer with 5+ years of experience building scalable web applications. Love solving complex problems and learning new technologies.',
-    website: 'https://johnsmith.dev',
-    github: 'johnsmith',
-    linkedin: 'johnsmith',
-    twitter: 'johnsmith_dev'
-  });
+  const { profileData, updateProfileData } = useFormContext();
 
-  const handleInputChange = (field: string, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof ProfileData, value: string) => {
+    updateProfileData(field, value);
   };
 
   const handleAvatarUpload = () => {
