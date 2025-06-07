@@ -19,6 +19,7 @@
     "framer-motion": "^12.16.0",
     "lucide-react": "^0.513.0",
     "mammoth": "^1.9.1",
+    "openai": "^4.71.1",
     "pdfjs-dist": "^5.3.31",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
