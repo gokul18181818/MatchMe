@@ -140,7 +140,9 @@ const AnalyzePage: React.FC = () => {
               position: finalJobData?.title || application.position,
               applicationId: application.id,
               jobData: finalJobData,
-              newApplication: true
+              newApplication: true,
+              resumeFile: resumeFile, // Pass the resume file for PDF generation
+              resumeText: resumeText // Pass extracted text for preview
             }
           });
         }, 1500);
