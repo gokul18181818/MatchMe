@@ -49,21 +49,29 @@ const AnalyzePage: React.FC = () => {
     setResumeText(extractedText || '');
   };
 
-  const handleJobUrlChange = async (url: string) => {
-    setJobUrl(url);
+  const handleJobUrlChange = async (input: string) => {
+    setJobUrl(input);
     setError(null);
     setScrapedJobData(null);
 
-    // Auto-scrape when a LinkedIn URL is detected
-    if (url.includes('linkedin.com/jobs/view/') && url.length > 30) {
+    // Auto-scrape when a LinkedIn URL or job ID is detected
+    const shouldScrape = input.includes('linkedin.com/jobs/view/') || 
+                        (/^\d{10,}$/.test(input.trim())); // Job ID pattern (10+ digits)
+    
+    if (shouldScrape && input.trim().length > 5) {
       setIsScraping(true);
       try {
-        const jobData = await scrapeLinkedInJob(url);
+        // Convert job ID to full URL if needed
+        const jobUrl = input.includes('linkedin.com') 
+          ? input 
+          : `https://www.linkedin.com/jobs/view/${input.trim()}/`;
+        
+        const jobData = await scrapeLinkedInJob(jobUrl);
         setScrapedJobData(jobData);
         console.log('Auto-scraped job data:', jobData);
       } catch (error) {
         console.error('Auto-scraping failed:', error);
-        setError('Failed to extract job details. You can still proceed with analysis.');
+        setError('Failed to extract job details. Please check the job ID or URL.');
       } finally {
         setIsScraping(false);
       }
@@ -82,11 +90,17 @@ const AnalyzePage: React.FC = () => {
     try {
       let finalJobData = scrapedJobData;
 
-      // If we haven't scraped yet but have a LinkedIn URL, scrape now
-      if (!finalJobData && jobUrl.includes('linkedin.com/jobs/view/')) {
+      // If we haven't scraped yet but have a LinkedIn URL or job ID, scrape now
+      const shouldScrapeNow = jobUrl.includes('linkedin.com/jobs/view/') || /^\d{10,}$/.test(jobUrl.trim());
+      if (!finalJobData && shouldScrapeNow) {
         setIsScraping(true);
         try {
-          finalJobData = await scrapeLinkedInJob(jobUrl);
+          // Convert job ID to full URL if needed
+          const finalUrl = jobUrl.includes('linkedin.com') 
+            ? jobUrl 
+            : `https://www.linkedin.com/jobs/view/${jobUrl.trim()}/`;
+          
+          finalJobData = await scrapeLinkedInJob(finalUrl);
           setScrapedJobData(finalJobData);
         } catch (scrapeError) {
           console.error('Scraping failed during analysis:', scrapeError);
@@ -102,10 +116,11 @@ const AnalyzePage: React.FC = () => {
       // Generate analysis score (in real app, this would come from AI analysis)
       const analysisScore = Math.floor(Math.random() * 15) + 80; // 80-95% range
       
-      // Create application entry from analysis
+      // Create application entry from analysis with scraped job data
       const application = await createApplicationFromAnalysis(
         user.id,
         jobUrl,
+        finalJobData, // Pass the scraped job data
         resumeFile || undefined,
         analysisScore
       );
@@ -139,10 +154,10 @@ const AnalyzePage: React.FC = () => {
     }
   };
 
-  // Check if we have resume content (either file or text) AND job URL
+  // Check if we have resume content (either file or text) OR job URL (can work with just job)
   const hasResumeContent = resumeFile || resumeText.trim().length > 0;
   const hasJobUrl = jobUrl.trim().length > 0;
-  const canAnalyze = hasResumeContent && hasJobUrl && !isScraping;
+  const canAnalyze = (hasResumeContent || hasJobUrl) && !isScraping;
 
   // Preview extracted company and position
   const previewCompany = scrapedJobData?.company || (hasJobUrl ? extractCompanyFromJobUrl(jobUrl) : '');
@@ -160,10 +175,10 @@ const AnalyzePage: React.FC = () => {
             className="text-center mb-12"
           >
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Analyze Your Resume
+              Analyze Job Opportunity
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Upload your resume and paste a LinkedIn job URL for AI-powered analysis and optimization
+              Paste a LinkedIn job URL to extract job details, or upload your resume for personalized analysis
             </p>
           </motion.div>
 
@@ -327,7 +342,7 @@ const AnalyzePage: React.FC = () => {
               ) : (
                 <>
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Analyze Resume
+                  {hasResumeContent ? 'Analyze Resume' : 'View Job Details'}
                 </>
               )}
             </Button>
@@ -340,13 +355,7 @@ const AnalyzePage: React.FC = () => {
                 className="text-center text-gray-500 dark:text-gray-400 mt-4"
               >
                 {!hasResumeContent && !hasJobUrl && 
-                  "Please upload your resume and add a LinkedIn job posting URL to continue"
-                }
-                {!hasResumeContent && hasJobUrl && 
-                  "Please upload your resume to continue"
-                }
-                {hasResumeContent && !hasJobUrl && 
-                  "Please add a LinkedIn job posting URL to continue"
+                  "Please add a LinkedIn job URL or upload your resume to continue"
                 }
                 {isScraping && 
                   "Extracting job details from LinkedIn..."

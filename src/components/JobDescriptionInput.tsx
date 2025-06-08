@@ -39,17 +39,17 @@ const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ value, onChan
             LinkedIn Job Posting
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Paste any LinkedIn job URL - we'll simulate job analysis with demo data
+            Paste a LinkedIn job URL or just the job ID number
           </p>
         </div>
       </div>
 
       <div className="space-y-4">
         <input
-          type="url"
+          type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="https://www.linkedin.com/jobs/view/..."
+          placeholder="https://www.linkedin.com/jobs/view/4196977154 or just 4196977154"
           className={cn(
             "w-full px-4 py-3 rounded-lg transition-all duration-300",
             "bg-gray-50 dark:bg-gray-800/50",
@@ -63,7 +63,7 @@ const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ value, onChan
         
         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span>Only LinkedIn job posting URLs are supported - we'll extract real job data automatically</span>
+          <span>We'll extract real job data automatically from LinkedIn</span>
         </div>
       </div>
     </motion.div>

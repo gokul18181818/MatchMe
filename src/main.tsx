@@ -9,9 +9,10 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .catch((err) => console.error('Service worker registration failed:', err));
-  });
-}
+// Service worker registration removed - can be re-added later with proper PWA setup
+// if ('serviceWorker' in navigator) {
+//   window.addEventListener('load', () => {
+//     navigator.serviceWorker.register('/sw.js')
+//       .catch((err) => console.error('Service worker registration failed:', err));
+//   });
+// }

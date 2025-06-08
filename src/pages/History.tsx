@@ -35,7 +35,7 @@ import {
   NetflixIcon,
   AmazonIcon,
 } from '../components/CompanyLogos';
-import { getFilteredApplications, getApplicationStats } from '../services/applicationService';
+import { getFilteredApplications, getApplicationStats, updateApplication } from '../services/applicationService';
 import type { ApplicationHistory, ApplicationStats } from '../services/applicationService';
 
 // Company logo mapping
@@ -109,10 +109,25 @@ const ResumeHistoryCard = ({ resume }: { resume: ApplicationHistory }) => {
     status: resume.status
   });
 
-  const handleSave = () => {
-    // Here you would typically save to backend/context
-    console.log('Saving edit data:', editData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      // Update the application in the database
+      await updateApplication(resume.id, {
+        company: editData.company,
+        position: editData.position,
+        application_date: editData.date,
+        status: editData.status
+      });
+      
+      console.log('Successfully saved edit data:', editData);
+      setIsEditing(false);
+      
+      // Refresh the applications list to show updated data
+      window.location.reload(); // Simple refresh - in production you'd update the state
+    } catch (error) {
+      console.error('Error saving application changes:', error);
+      // You could show a toast/error message here
+    }
   };
 
   const handleCancel = () => {
@@ -202,6 +217,12 @@ const ResumeHistoryCard = ({ resume }: { resume: ApplicationHistory }) => {
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-2">
                   <Building2 className="w-4 h-4" />
                   <span className="font-medium">{resume.company}</span>
+                  {resume.location && (
+                    <>
+                      <span>•</span>
+                      <span>{resume.location}</span>
+                    </>
+                  )}
                   <span>•</span>
                   <Calendar className="w-4 h-4" />
                   <span>{new Date(resume.application_date).toLocaleDateString()}</span>
@@ -212,14 +233,16 @@ const ResumeHistoryCard = ({ resume }: { resume: ApplicationHistory }) => {
           </div>
         </div>
         <div className="text-right">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-              +{resume.improvement}%
-            </span>
-          </div>
+          {resume.improvement && (
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-green-500" />
+              <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                +{resume.improvement}%
+              </span>
+            </div>
+          )}
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {resume.score}%
+            {resume.score || 0}%
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-500">
             Resume Score
