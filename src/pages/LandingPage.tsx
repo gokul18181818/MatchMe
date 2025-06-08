@@ -1,8 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Target, Zap, Sparkles, FileText, BarChart3 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 import ThemeToggle from '../components/ThemeToggle';
 import Button from '../components/Button';
@@ -10,6 +11,41 @@ import CompanyLogos from '../components/CompanyLogos';
 
 const LandingPage: React.FC = () => {
   const { theme } = useTheme();
+  const { user, loading, debugAuthState } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect logged-in users to choose-action page
+  useEffect(() => {
+    if (!loading && user) {
+      console.log('User is logged in, redirecting to choose-action page');
+      navigate('/choose-action', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className={cn(
+        "min-h-screen flex items-center justify-center",
+        theme === "dark" ? "bg-zinc-950" : "bg-white"
+      )}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className={cn(
+            "text-lg",
+            theme === "dark" ? "text-zinc-300" : "text-zinc-600"
+          )}>
+            Loading...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Only show landing page for non-authenticated users
+  if (user) {
+    return null; // Will redirect in useEffect
+  }
 
   const features = [
     {
@@ -105,6 +141,18 @@ const LandingPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-4">
           <ThemeToggle />
+          {/* Debug Auth State Button (temporary) */}
+          <Button 
+            onClick={debugAuthState}
+            className={cn(
+              "rounded-full px-3 py-2 text-xs font-medium transition-all duration-300",
+              theme === "dark" 
+                ? "bg-red-600 text-white hover:bg-red-700" 
+                : "bg-red-500 text-white hover:bg-red-600"
+            )}
+          >
+            Debug Auth
+          </Button>
           <Link to="/login">
             <Button className={cn(
               "rounded-full px-4 py-2 font-medium transition-all duration-300",

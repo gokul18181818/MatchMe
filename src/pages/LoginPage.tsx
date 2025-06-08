@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      const from = location.state?.from?.pathname || '/dashboard';
+      const from = location.state?.from?.pathname || '/choose-action';
       navigate(from, { replace: true });
     }
   }, [user, authLoading, navigate, location]);
@@ -85,7 +85,7 @@ const LoginPage: React.FC = () => {
         // Success! Clear form and navigate
         setEmail('');
         setPassword('');
-        const from = location.state?.from?.pathname || '/dashboard';
+        const from = location.state?.from?.pathname || '/choose-action';
         navigate(from, { replace: true });
       }
     } catch (err) {

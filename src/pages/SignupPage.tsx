@@ -26,7 +26,7 @@ const SignupPage: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/dashboard', { replace: true });
+      navigate('/choose-action', { replace: true });
     }
   }, [user, authLoading, navigate]);
 

@@ -12,6 +12,7 @@ interface AuthContextType {
   signOut: () => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  debugAuthState: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,26 +51,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Get initial session
     const getSession = async () => {
       try {
+        console.log('🔍 AUTH DEBUG: Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!mounted) return; // Prevent state updates if component unmounted
         
         if (error) {
-          console.error('Error getting session:', error);
+          console.error('❌ AUTH ERROR: Error getting session:', error);
           setSession(null);
           setUser(null);
         } else {
-          console.log('Auth state changed: INITIAL_SESSION', session?.user?.email || 'undefined');
+          console.log('✅ AUTH DEBUG: Initial session retrieved', {
+            hasSession: !!session,
+            hasUser: !!session?.user,
+            userEmail: session?.user?.email || 'undefined',
+            userMetadata: session?.user?.user_metadata,
+            accessToken: session?.access_token ? 'present' : 'missing',
+            expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null
+          });
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
         if (!mounted) return;
-        console.error('Error in getSession:', error);
+        console.error('💥 AUTH ERROR: Exception in getSession:', error);
         setSession(null);
         setUser(null);
       } finally {
         if (mounted) {
+          console.log('⏰ AUTH DEBUG: Setting loading to false');
           setLoading(false);
         }
       }
@@ -82,17 +92,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       async (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state changed:', event, session?.user?.email || 'undefined');
+        console.log('🔄 AUTH STATE CHANGE:', event, {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userEmail: session?.user?.email || 'undefined',
+          sessionAccessToken: session?.access_token ? 'present' : 'missing',
+          currentPath: window.location.pathname
+        });
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in:', session.user.email);
+          console.log('✅ USER SIGNED IN:', session.user.email, 'at', window.location.pathname);
         } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
+          console.log('❌ USER SIGNED OUT at', window.location.pathname);
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 TOKEN REFRESHED for:', session?.user?.email);
+        } else if (event === 'INITIAL_SESSION') {
+          console.log('🏁 INITIAL SESSION for:', session?.user?.email || 'no user');
         }
         
         if (loading) {
+          console.log('⏰ AUTH DEBUG: Setting loading to false (from auth state change)');
           setLoading(false);
         }
       }
@@ -151,7 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/welcome`,
+          redirectTo: `${window.location.origin}/choose-action`,
         },
       });
       return { error };
@@ -173,6 +195,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const debugAuthState = () => {
+    console.log('🔍 AUTH STATE DEBUG:', {
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        metadata: user.user_metadata
+      } : null,
+      session: session ? {
+        hasAccessToken: !!session.access_token,
+        expiresAt: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : null
+      } : null,
+      loading
+    });
+  };
+
   const value: AuthContextType = {
     user,
     session,
@@ -182,6 +219,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
     signInWithGoogle,
     resetPassword,
+    debugAuthState,
   };
 
   return (

@@ -81,7 +81,7 @@ const WelcomePage: React.FC = () => {
   };
 
   const handleSkipToDashboard = () => {
-    navigate('/dashboard');
+    navigate('/choose-action');
   };
 
   return (
@@ -294,7 +294,7 @@ const WelcomePage: React.FC = () => {
                   )}
                 >
                   <Users className="w-5 h-5 mr-2" />
-                  Go to Dashboard
+                  Choose What to Do
                 </Button>
               </div>
 
