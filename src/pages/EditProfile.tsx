@@ -1,20 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Camera, 
   Save, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
   Briefcase, 
-  Globe, 
-  Github, 
-  Linkedin, 
-  Twitter,
   Upload,
-  X
+  X,
+  BarChart3,
+  TrendingUp,
+  FileText,
+  Eye,
+  ArrowRight
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useFormContext, type ProfileData } from '../contexts/FormContext';
@@ -25,6 +22,7 @@ import Button from '../components/Button';
 const EditProfile: React.FC = () => {
   const { theme } = useTheme();
   const { profileData, updateProfileData } = useFormContext();
+  const navigate = useNavigate();
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     updateProfileData(field, value);
@@ -35,8 +33,12 @@ const EditProfile: React.FC = () => {
     console.log('Avatar upload clicked');
   };
 
+  const handleViewDashboard = () => {
+    navigate('/dashboard');
+  };
+
   return (
-    <PageLayout showBackButton backTo="/dashboard" backLabel="Back to Dashboard">
+    <PageLayout showBackButton backTo="/choose-action" backLabel="Back to Home">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -45,11 +47,83 @@ const EditProfile: React.FC = () => {
         className="mb-8"
       >
         <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
-          Edit Profile 👤
+          Professional Profile 💼
         </h2>
         <p className="text-zinc-600 dark:text-zinc-400">
-          Update your personal information and professional details
+          Update your professional information and career details for better resume targeting
         </p>
+      </motion.div>
+
+      {/* Dashboard Quick Access */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className={cn(
+          "p-6 rounded-xl border backdrop-blur-sm mb-8",
+          "bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20",
+          "border-blue-200 dark:border-blue-800"
+        )}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-1">
+                Your Dashboard & Analytics
+              </h3>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                View your application stats, resume performance, and career insights
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleViewDashboard}
+            className={cn(
+              "group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+              "bg-white/70 dark:bg-zinc-800/70 hover:bg-white dark:hover:bg-zinc-700",
+              "border border-zinc-200 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300",
+              "hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+            )}
+          >
+            <Eye className="w-4 h-4" />
+            <span>View Dashboard</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+          </button>
+        </div>
+        
+        {/* Quick Stats Preview */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/50 dark:bg-zinc-800/50">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">5 Applications</p>
+              <p className="text-xs text-zinc-500">This month</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/50 dark:bg-zinc-800/50">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">3 Resumes</p>
+              <p className="text-xs text-zinc-500">Generated</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/50 dark:bg-zinc-800/50">
+            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">92% Match</p>
+              <p className="text-xs text-zinc-500">Average score</p>
+            </div>
+          </div>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -95,147 +169,6 @@ const EditProfile: React.FC = () => {
 
         {/* Main Profile Information */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Personal Information */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className={cn(
-              "p-6 rounded-xl border backdrop-blur-sm",
-              "bg-white/50 dark:bg-zinc-900/50",
-              "border-zinc-200 dark:border-zinc-700"
-            )}
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Personal Information</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={profileData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className={cn(
-                    "w-full px-4 py-3 rounded-lg border transition-all duration-300",
-                    "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                    "border-zinc-200 dark:border-zinc-600",
-                    "text-zinc-900 dark:text-white",
-                    "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={profileData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className={cn(
-                    "w-full px-4 py-3 rounded-lg border transition-all duration-300",
-                    "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                    "border-zinc-200 dark:border-zinc-600",
-                    "text-zinc-900 dark:text-white",
-                    "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  )}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={cn(
-                      "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                      "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                      "border-zinc-200 dark:border-zinc-600",
-                      "text-zinc-900 dark:text-white",
-                      "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                  <input
-                    type="tel"
-                    value={profileData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={cn(
-                      "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                      "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                      "border-zinc-200 dark:border-zinc-600",
-                      "text-zinc-900 dark:text-white",
-                      "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  Location
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                  <input
-                    type="text"
-                    value={profileData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    className={cn(
-                      "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                      "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                      "border-zinc-200 dark:border-zinc-600",
-                      "text-zinc-900 dark:text-white",
-                      "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  Birth Date
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                  <input
-                    type="date"
-                    value={profileData.birthDate}
-                    onChange={(e) => handleInputChange('birthDate', e.target.value)}
-                    className={cn(
-                      "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                      "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                      "border-zinc-200 dark:border-zinc-600",
-                      "text-zinc-900 dark:text-white",
-                      "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
           {/* Professional Information */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -312,132 +245,55 @@ const EditProfile: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Social Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className={cn(
-              "p-6 rounded-xl border backdrop-blur-sm",
-              "bg-white/50 dark:bg-zinc-900/50",
-              "border-zinc-200 dark:border-zinc-700"
-            )}
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                <Globe className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Social Links</h3>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  Website
-                </label>
-                <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                  <input
-                    type="url"
-                    value={profileData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    placeholder="https://yourwebsite.com"
-                    className={cn(
-                      "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                      "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                      "border-zinc-200 dark:border-zinc-600",
-                      "text-zinc-900 dark:text-white",
-                      "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                    GitHub
-                  </label>
-                  <div className="relative">
-                    <Github className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                    <input
-                      type="text"
-                      value={profileData.github}
-                      onChange={(e) => handleInputChange('github', e.target.value)}
-                      placeholder="username"
-                      className={cn(
-                        "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                        "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                        "border-zinc-200 dark:border-zinc-600",
-                        "text-zinc-900 dark:text-white",
-                        "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                    LinkedIn
-                  </label>
-                  <div className="relative">
-                    <Linkedin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                    <input
-                      type="text"
-                      value={profileData.linkedin}
-                      onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                      placeholder="username"
-                      className={cn(
-                        "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                        "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                        "border-zinc-200 dark:border-zinc-600",
-                        "text-zinc-900 dark:text-white",
-                        "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                    Twitter
-                  </label>
-                  <div className="relative">
-                    <Twitter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                    <input
-                      type="text"
-                      value={profileData.twitter}
-                      onChange={(e) => handleInputChange('twitter', e.target.value)}
-                      placeholder="username"
-                      className={cn(
-                        "w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-300",
-                        "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                        "border-zinc-200 dark:border-zinc-600",
-                        "text-zinc-900 dark:text-white",
-                        "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
           {/* Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex gap-4"
+            className="space-y-4"
           >
-            <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
-              <Save className="w-4 h-4 mr-2" />
-              Save Changes
-            </Button>
-            <Button className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 border-0">
-              <X className="w-4 h-4 mr-2" />
-              Cancel
-            </Button>
+            <div className="flex gap-4">
+              <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </Button>
+              <Button 
+                onClick={() => navigate('/choose-action')}
+                className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 border-0"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+            
+            {/* Quick Navigation */}
+            <div className={cn(
+              "flex flex-wrap gap-2 p-4 rounded-lg border",
+              "bg-zinc-50/50 dark:bg-zinc-800/30",
+              "border-zinc-200 dark:border-zinc-700"
+            )}>
+              <span className="text-sm text-zinc-600 dark:text-zinc-400 mr-2">Quick actions:</span>
+              <button
+                onClick={handleViewDashboard}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
+              >
+                View Dashboard
+              </button>
+              <span className="text-zinc-400">•</span>
+              <button
+                onClick={() => navigate('/job-recommendations')}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
+              >
+                Browse Jobs
+              </button>
+              <span className="text-zinc-400">•</span>
+              <button
+                onClick={() => navigate('/analyze')}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
+              >
+                Tailor Resume
+              </button>
+            </div>
           </motion.div>
         </div>
       </div>

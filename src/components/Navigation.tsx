@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard, Crown, Target } from 'lucide-react';
+import { ArrowLeft, Sparkles, ChevronDown, Settings, LogOut, User, Crown } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
@@ -31,10 +31,17 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const handleSignOut = async () => {
     setIsProfileOpen(false);
-    const { error } = await signOut();
-    if (!error) {
-      // Redirect to landing page after successful sign out
-      navigate('/');
+    try {
+      const { error } = await signOut();
+      if (!error) {
+        // Force redirect to landing page after successful sign out
+        // Use replace to prevent back button issues
+        window.location.href = '/';
+      } else {
+        console.error('Sign out error:', error);
+      }
+    } catch (err) {
+      console.error('Unexpected sign out error:', err);
     }
   };
 
@@ -86,51 +93,6 @@ const Navigation: React.FC<NavigationProps> = ({
       <div className="flex items-center justify-end space-x-2 lg:space-x-3 flex-shrink-0 min-w-0 lg:w-1/4">
         {user ? (
           <>
-            {/* Dashboard Button - Hidden on small screens */}
-            <Link 
-              to="/dashboard" 
-              className={cn(
-                "hidden sm:flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
-                "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
-                "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-                "border border-white/20 dark:border-white/10 font-medium text-sm",
-                location.pathname === '/dashboard' && "bg-blue-100/50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600"
-              )}
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span className="hidden lg:block">Dashboard</span>
-            </Link>
-
-            {/* Job Recommendations Button - Hidden on small screens */}
-            <Link 
-              to="/job-recommendations" 
-              className={cn(
-                "hidden sm:flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
-                "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
-                "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-                "border border-white/20 dark:border-white/10 font-medium text-sm",
-                location.pathname === '/job-recommendations' && "bg-blue-100/50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600"
-              )}
-            >
-              <Target className="w-4 h-4" />
-              <span className="hidden lg:block">Jobs</span>
-            </Link>
-
-            {/* Past Resumes Button - Hidden on small screens */}
-            <Link 
-              to="/history" 
-              className={cn(
-                "hidden md:flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
-                "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
-                "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-                "border border-white/20 dark:border-white/10 font-medium text-sm",
-                location.pathname === '/history' && "bg-blue-100/50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600"
-              )}
-            >
-              <FileText className="w-4 h-4" />
-              <span className="hidden lg:block">Resumes</span>
-            </Link>
-
             {/* Subscription Button */}
             <Link 
               to="/subscription" 

@@ -18,7 +18,12 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     if (!loading && user) {
       console.log('User is logged in, redirecting to choose-action page');
-      navigate('/choose-action', { replace: true });
+      // Add small delay to avoid race conditions with sign-out
+      const timeoutId = setTimeout(() => {
+        navigate('/choose-action', { replace: true });
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [user, loading, navigate]);
 
