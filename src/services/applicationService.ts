@@ -308,9 +308,9 @@ export const migrateMockApplicationData = async (userId: string) => {
   ];
 
   try {
-    for (const appData of mockApplications) {
-      await createApplication(userId, appData);
-    }
+    await Promise.all(
+      mockApplications.map(appData => createApplication(userId, appData))
+    );
     console.log('Successfully migrated mock application data to database');
   } catch (error) {
     console.error('Error migrating mock application data:', error);

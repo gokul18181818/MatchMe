@@ -440,8 +440,8 @@ Benefits:
       job_url: linkedinUrl
     };
 
-    // Simulate some processing time
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Removed artificial delay for faster execution
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     console.log('Mock job data generated successfully');
     return mockJobData;
