@@ -7,7 +7,8 @@ import {
   FileText, 
   ChevronRight,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTheme } from '../contexts/ThemeContext';
@@ -20,6 +21,27 @@ const ChooseActionPage: React.FC = () => {
 
   const actions = [
     {
+      id: 'job-recommendations',
+      title: 'Jobs You Should Apply To',
+      description: 'AI-curated LinkedIn jobs with apply now and generate resume buttons',
+      icon: Briefcase,
+      iconColor: 'text-emerald-600',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+      borderColor: 'border-emerald-200 dark:border-emerald-800',
+      route: '/job-recommendations',
+      featured: true
+    },
+    {
+      id: 'tailor',
+      title: 'Tailor Resume for Job',
+      description: 'Manually enter a job URL and generate perfectly customized resumes',
+      icon: Target,
+      iconColor: 'text-purple-600',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      borderColor: 'border-purple-200 dark:border-purple-800',
+      route: '/analyze'
+    },
+    {
       id: 'dashboard',
       title: 'View Dashboard',
       description: 'See your analytics, recent activity, and performance overview',
@@ -28,16 +50,6 @@ const ChooseActionPage: React.FC = () => {
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
       borderColor: 'border-blue-200 dark:border-blue-800',
       route: '/dashboard'
-    },
-    {
-      id: 'tailor',
-      title: 'Tailor Resume for Job',
-      description: 'Find jobs and generate perfectly customized resumes',
-      icon: Target,
-      iconColor: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-      borderColor: 'border-purple-200 dark:border-purple-800',
-      route: '/analyze'
     },
     {
       id: 'applications',
@@ -103,27 +115,91 @@ const ChooseActionPage: React.FC = () => {
         </motion.div>
 
         {/* Action Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {actions.map((action, index) => {
-            const Icon = action.icon;
-            
-            return (
-              <motion.button
-                key={action.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                onClick={() => handleActionClick(action.route)}
-                className={cn(
-                  "group relative p-8 rounded-2xl border-2 transition-all duration-300",
-                  "hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20",
-                  "text-left w-full",
-                  theme === "dark" 
-                    ? "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/70" 
-                    : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                  action.borderColor.replace('border-', 'hover:border-')
-                )}
-              >
+        <div className="space-y-6">
+          {/* Featured Job Recommendations Card */}
+          {actions
+            .filter(action => action.featured)
+            .map((action, index) => {
+              const Icon = action.icon;
+              
+              return (
+                <motion.button
+                  key={action.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  onClick={() => handleActionClick(action.route)}
+                  className={cn(
+                    "group relative p-8 rounded-2xl border-2 transition-all duration-300 w-full",
+                    "hover:scale-[1.02] hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20",
+                    "text-left bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20",
+                    "border-emerald-300 dark:border-emerald-700 hover:border-emerald-400 dark:hover:border-emerald-600"
+                  )}
+                >
+                  <div className="flex items-center gap-6">
+                    {/* Icon */}
+                    <div className={cn(
+                      "w-20 h-20 rounded-xl flex items-center justify-center transition-colors duration-300",
+                      "bg-gradient-to-r from-emerald-500 to-emerald-600"
+                    )}>
+                      <Icon className="w-10 h-10 text-white" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-2xl font-bold group-hover:text-emerald-600 transition-colors duration-300">
+                          {action.title}
+                        </h3>
+                        <span className="px-3 py-1 bg-emerald-600 text-white text-sm font-bold rounded-full">
+                          NEW
+                        </span>
+                      </div>
+                      <p className={cn(
+                        "text-lg leading-relaxed mb-4",
+                        theme === "dark" ? "text-zinc-400" : "text-zinc-600"
+                      )}>
+                        {action.description}
+                      </p>
+                      <div className="flex items-center">
+                        <span className={cn(
+                          "text-lg font-medium",
+                          theme === "dark" ? "text-emerald-400" : "text-emerald-600"
+                        )}>
+                          Start browsing jobs
+                        </span>
+                        <ArrowRight className="w-6 h-6 text-emerald-600 group-hover:translate-x-2 transition-transform duration-300 ml-2" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })}
+
+          {/* Other Action Cards */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {actions
+              .filter(action => !action.featured)
+              .map((action, index) => {
+                const Icon = action.icon;
+                
+                return (
+                  <motion.button
+                    key={action.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: (index + 1) * 0.1 }}
+                    onClick={() => handleActionClick(action.route)}
+                    className={cn(
+                      "group relative p-8 rounded-2xl border-2 transition-all duration-300",
+                      "hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20",
+                      "text-left w-full",
+                      theme === "dark" 
+                        ? "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/70" 
+                        : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50",
+                      action.borderColor.replace('border-', 'hover:border-')
+                    )}
+                  >
                 {/* Icon Background */}
                 <div className={cn(
                   "w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-colors duration-300",

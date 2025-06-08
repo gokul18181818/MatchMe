@@ -19,6 +19,7 @@ const EditProfile = lazy(() => import('./pages/EditProfile'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const TestDatabasePage = lazy(() => import('./pages/TestDatabasePage'));
 const ChooseActionPage = lazy(() => import('./pages/ChooseActionPage'));
+const JobRecommendationsPage = lazy(() => import('./pages/JobRecommendationsPage'));
 
 // Error Boundary Component
 class AppErrorBoundary extends React.Component<
@@ -102,6 +103,7 @@ function App() {
                   <Route path="/subscription" element={<AuthGuard><Subscription /></AuthGuard>} />
                   <Route path="/test-database" element={<AuthGuard><TestDatabasePage /></AuthGuard>} />
                   <Route path="/choose-action" element={<AuthGuard><ChooseActionPage /></AuthGuard>} />
+                  <Route path="/job-recommendations" element={<AuthGuard><JobRecommendationsPage /></AuthGuard>} />
                 </Routes>
               </Suspense>
             </Router>
