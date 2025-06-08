@@ -113,10 +113,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('🏁 INITIAL SESSION for:', session?.user?.email || 'no user');
         }
         
-        if (loading) {
-          console.log('⏰ AUTH DEBUG: Setting loading to false (from auth state change)');
-          setLoading(false);
-        }
+        console.log('⏰ AUTH DEBUG: Setting loading to false (from auth state change)');
+        setLoading(false);
       }
     );
 

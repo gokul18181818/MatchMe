@@ -23,15 +23,15 @@ const ChooseActionPage: React.FC = () => {
 
   const actions = [
     {
-      id: 'job-recommendations',
-      title: 'Look at New Curated Jobs',
-      description: 'AI-curated LinkedIn jobs with apply now and generate resume buttons',
+      id: 'job-curation',
+      title: 'Look at Bio-Matched Jobs',
+      description: 'AI analyzes your bio and finds perfectly matched LinkedIn jobs with insights',
       icon: Briefcase,
       iconColor: 'text-emerald-600',
       bgGradient: 'from-emerald-500 to-emerald-600',
       hoverGradient: 'from-emerald-600 to-emerald-700',
-      route: '/job-recommendations',
-      ctaText: 'Browse new jobs'
+      route: '/job-curation',
+      ctaText: 'Browse bio-matched jobs'
     },
     {
       id: 'tailor',

@@ -22,7 +22,7 @@ import Button from '../components/Button';
 
 const EditProfile: React.FC = () => {
   const { theme } = useTheme();
-  const { profileData, updateProfileData } = useFormContext();
+  const { profileData, updateProfileData, saveToDatabase } = useFormContext();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -42,6 +42,17 @@ const EditProfile: React.FC = () => {
 
   const handleViewDashboard = () => {
     navigate('/dashboard');
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      await saveToDatabase();
+      console.log('✅ Profile data saved successfully!');
+      // Optional: Show success message or navigate
+    } catch (error) {
+      console.error('❌ Error saving profile data:', error);
+      // Optional: Show error message
+    }
   };
 
   return (
@@ -266,7 +277,7 @@ const EditProfile: React.FC = () => {
             className="space-y-4"
           >
             <div className="flex gap-4">
-              <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
+              <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0" onClick={handleSaveChanges}>
                 <Save className="w-4 h-4 mr-2" />
                 Save Changes
               </Button>

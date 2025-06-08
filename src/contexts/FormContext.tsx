@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { getUserProfile, updateUserProfile, getUserSettings, updateUserSettings, migrateLocalStorageToDatabase } from '../services/userService';
+import { getUserProfile, updateUserProfile, upsertUserProfile, ensureUserProfile, getUserSettings, updateUserSettings, migrateLocalStorageToDatabase } from '../services/userService';
 
 export interface ProfileData {
   firstName: string;
@@ -84,6 +84,9 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
       
       setIsLoading(true);
       try {
+        // Ensure profile exists first
+        await ensureUserProfile(user.id);
+        
         // Load profile data
         const profile = await getUserProfile(user.id);
         if (profile) {
@@ -143,8 +146,12 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
     if (!user?.id) return;
     
     try {
+      console.log('🔍 FORM DEBUG: Current profileData:', profileData);
+      console.log('🔍 FORM DEBUG: Bio value:', profileData.bio);
+      console.log('🔍 FORM DEBUG: Bio length:', profileData.bio?.length);
+      
       // Save profile data
-      await updateUserProfile(user.id, {
+      const profileUpdateData = {
         first_name: profileData.firstName,
         last_name: profileData.lastName,
         phone: profileData.phone,
@@ -157,7 +164,18 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
         github_username: profileData.github,
         linkedin_username: profileData.linkedin,
         twitter_username: profileData.twitter,
-      });
+      };
+      
+      console.log('🔍 FORM DEBUG: Sending to upsert:', profileUpdateData);
+      
+      const result = await upsertUserProfile(user.id, profileUpdateData);
+      
+      // Fallback: If bio is important and it seems like it didn't save, try direct save
+      if (profileData.bio && profileData.bio.trim().length > 0) {
+        console.log('🔍 FORM DEBUG: Attempting fallback bio save...');
+        const { saveBioDirectly } = await import('../services/userService');
+        await saveBioDirectly(user.id, profileData.bio);
+      }
 
       // Save settings data
       await updateUserSettings(user.id, {
@@ -169,6 +187,7 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
       console.log('Data saved successfully');
     } catch (error) {
       console.error('Error saving data:', error);
+      throw error; // Re-throw so the UI can handle it
     }
   };
 

@@ -31,7 +31,7 @@ const TestDatabasePage: React.FC = () => {
         birth_date: '1995-03-15',
         job_title: 'Software Engineer',
         company: 'Tech Corp',
-        bio: 'Passionate software engineer with 5+ years of experience building scalable web applications.',
+        bio: 'I am looking for senior frontend developer roles or full stack positions. I have 5+ years of experience with React, TypeScript, and Node.js. I prefer remote work but am open to hybrid positions in the San Francisco Bay Area. I am passionate about building scalable web applications and user-friendly interfaces.',
         website: 'https://johnsmith.dev',
         github_username: 'johnsmith',
         linkedin_username: 'johnsmith',

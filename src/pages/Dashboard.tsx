@@ -276,15 +276,15 @@ const Dashboard: React.FC = () => {
                   </button>
                 </Link>
                 
-                <Link to="/job-recommendations" className="block">
+                <Link to="/job-curation" className="block">
                   <button className="w-full text-left px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
                         <Target className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">Browse Jobs</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Find new opportunities</p>
+                        <p className="font-medium text-gray-900 dark:text-white">Browse Bio-Matched Jobs</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">AI-curated based on your bio</p>
                       </div>
                     </div>
                   </button>
