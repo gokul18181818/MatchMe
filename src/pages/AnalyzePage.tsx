@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Loader, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -24,6 +24,25 @@ const AnalyzePage: React.FC = () => {
   const { theme } = useTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Handle pre-filled job data from recommendations page
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.prefilledJob) {
+      const { url, company, title } = state.prefilledJob;
+      setJobUrl(url);
+      // Pre-populate scraped data for better UX
+      setScrapedJobData({
+        title,
+        company,
+        location: 'San Francisco, CA', // Mock data
+        employment_type: 'Full-time',
+        requirements: ['Programming', 'Problem solving', 'Team collaboration'],
+        description: `Join ${company} as a ${title}. This role involves working on cutting-edge projects...`
+      });
+    }
+  }, [location.state]);
 
   const handleResumeFileSelect = (file: File | null, extractedText?: string) => {
     setResumeFile(file);

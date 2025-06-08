@@ -200,43 +200,44 @@ const ChooseActionPage: React.FC = () => {
                       action.borderColor.replace('border-', 'hover:border-')
                     )}
                   >
-                {/* Icon Background */}
-                <div className={cn(
-                  "w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-colors duration-300",
-                  action.bgColor
-                )}>
-                  <Icon className={cn("w-8 h-8", action.iconColor)} />
-                </div>
+                    {/* Icon Background */}
+                    <div className={cn(
+                      "w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-colors duration-300",
+                      action.bgColor
+                    )}>
+                      <Icon className={cn("w-8 h-8", action.iconColor)} />
+                    </div>
 
-                {/* Content */}
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors duration-300">
-                    {action.title}
-                  </h3>
-                  <p className={cn(
-                    "text-sm leading-relaxed",
-                    theme === "dark" ? "text-zinc-400" : "text-zinc-600"
-                  )}>
-                    {action.description}
-                  </p>
-                </div>
+                    {/* Content */}
+                    <div className="mb-6">
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                        {action.title}
+                      </h3>
+                      <p className={cn(
+                        "text-sm leading-relaxed",
+                        theme === "dark" ? "text-zinc-400" : "text-zinc-600"
+                      )}>
+                        {action.description}
+                      </p>
+                    </div>
 
-                {/* Arrow */}
-                <div className="flex items-center justify-between">
-                  <span className={cn(
-                    "text-sm font-medium",
-                    theme === "dark" ? "text-zinc-500" : "text-zinc-500"
-                  )}>
-                    Get started
-                  </span>
-                  <ArrowRight className="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform duration-300" />
-                </div>
+                    {/* Arrow */}
+                    <div className="flex items-center justify-between">
+                      <span className={cn(
+                        "text-sm font-medium",
+                        theme === "dark" ? "text-zinc-500" : "text-zinc-500"
+                      )}>
+                        Get started
+                      </span>
+                      <ArrowRight className="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform duration-300" />
+                    </div>
 
-                {/* Hover Effect */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-              </motion.button>
-            );
-          })}
+                    {/* Hover Effect */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  </motion.button>
+                );
+              })}
+          </div>
         </div>
 
         {/* Quick Stats or Tips */}

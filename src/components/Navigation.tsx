@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard, Crown } from 'lucide-react';
+import { ArrowLeft, Sparkles, ChevronDown, Settings, FileText, LogOut, User, LayoutDashboard, Crown, Target } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,6 +21,7 @@ const Navigation: React.FC<NavigationProps> = ({
   const { theme } = useTheme();
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Get user data with fallbacks
@@ -30,7 +31,11 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const handleSignOut = async () => {
     setIsProfileOpen(false);
-    await signOut();
+    const { error } = await signOut();
+    if (!error) {
+      // Redirect to landing page after successful sign out
+      navigate('/');
+    }
   };
 
   return (
@@ -94,6 +99,21 @@ const Navigation: React.FC<NavigationProps> = ({
             >
               <LayoutDashboard className="w-4 h-4" />
               <span className="hidden lg:block">Dashboard</span>
+            </Link>
+
+            {/* Job Recommendations Button - Hidden on small screens */}
+            <Link 
+              to="/job-recommendations" 
+              className={cn(
+                "hidden sm:flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-300",
+                "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
+                "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
+                "border border-white/20 dark:border-white/10 font-medium text-sm",
+                location.pathname === '/job-recommendations' && "bg-blue-100/50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600"
+              )}
+            >
+              <Target className="w-4 h-4" />
+              <span className="hidden lg:block">Jobs</span>
             </Link>
 
             {/* Past Resumes Button - Hidden on small screens */}

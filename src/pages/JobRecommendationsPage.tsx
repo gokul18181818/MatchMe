@@ -30,7 +30,7 @@ interface Job {
   description: string;
   requirements: string[];
   linkedinUrl: string;
-  companyLogo?: string;
+  companyLogo: string;
   matchScore: number;
 }
 
@@ -47,6 +47,7 @@ const mockJobs: Job[] = [
     description: 'Join our team to build the next generation of cloud infrastructure...',
     requirements: ['Python', 'Go', 'Kubernetes', 'Cloud platforms'],
     linkedinUrl: 'https://www.linkedin.com/jobs/view/3756789123',
+    companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg',
     matchScore: 95
   },
   {
@@ -60,6 +61,7 @@ const mockJobs: Job[] = [
     description: 'Build beautiful, responsive user interfaces for billions of users...',
     requirements: ['React', 'TypeScript', 'GraphQL', 'Next.js'],
     linkedinUrl: 'https://www.linkedin.com/jobs/view/3756789124',
+    companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg',
     matchScore: 92
   },
   {
@@ -73,6 +75,7 @@ const mockJobs: Job[] = [
     description: 'Help us build the economic infrastructure for the internet...',
     requirements: ['Node.js', 'React', 'PostgreSQL', 'APIs'],
     linkedinUrl: 'https://www.linkedin.com/jobs/view/3756789125',
+    companyLogo: 'https://images.ctfassets.net/fzn2n1nzq965/3AGidihOJl4nH9D1vDjM84/9540155d584be52fc54c443b6efa4ae6/stripe.svg',
     matchScore: 88
   },
   {
@@ -86,6 +89,7 @@ const mockJobs: Job[] = [
     description: 'Build AI systems that benefit humanity...',
     requirements: ['Python', 'TensorFlow', 'PyTorch', 'Machine Learning'],
     linkedinUrl: 'https://www.linkedin.com/jobs/view/3756789126',
+    companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg',
     matchScore: 90
   },
   {
@@ -99,6 +103,7 @@ const mockJobs: Job[] = [
     description: 'Scale our platform to serve millions of users worldwide...',
     requirements: ['Java', 'Microservices', 'Kafka', 'Docker'],
     linkedinUrl: 'https://www.linkedin.com/jobs/view/3756789127',
+    companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png',
     matchScore: 85
   },
   {
@@ -112,6 +117,7 @@ const mockJobs: Job[] = [
     description: 'Build and maintain the infrastructure that powers global streaming...',
     requirements: ['AWS', 'Terraform', 'Kubernetes', 'CI/CD'],
     linkedinUrl: 'https://www.linkedin.com/jobs/view/3756789128',
+    companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
     matchScore: 87
   }
 ];
@@ -163,9 +169,9 @@ const JobRecommendationsPage: React.FC = () => {
   });
 
   const getMatchScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100 dark:bg-green-900/30';
-    if (score >= 80) return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30';
-    return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30';
+    if (score >= 90) return 'text-emerald-700 bg-emerald-50/80 dark:text-emerald-400 dark:bg-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/30';
+    if (score >= 80) return 'text-blue-700 bg-blue-50/80 dark:text-blue-400 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/30';
+    return 'text-amber-700 bg-amber-50/80 dark:text-amber-400 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/30';
   };
 
   if (loading) {
@@ -258,7 +264,7 @@ const JobRecommendationsPage: React.FC = () => {
         </motion.div>
 
         {/* Jobs Grid */}
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {filteredJobs.map((job, index) => (
             <motion.div
               key={job.id}
@@ -266,93 +272,137 @@ const JobRecommendationsPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className={cn(
-                "p-6 rounded-xl border transition-all duration-300 hover:shadow-lg",
-                "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                "group relative p-6 rounded-xl border transition-all duration-300 hover:shadow-xl hover:scale-[1.005]",
+                "bg-gradient-to-r from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-800",
+                "border-gray-200/60 dark:border-gray-700/60",
+                "hover:border-blue-200 dark:hover:border-blue-600/50",
+                "backdrop-blur-sm"
               )}
             >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                {/* Job Info */}
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                        {job.title}
-                      </h3>
-                      <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <Building className="w-4 h-4" />
-                          <span className="font-medium">{job.company}</span>
+              <div className="flex flex-col xl:flex-row gap-4">
+                {/* Left Section - Company Logo & Info */}
+                <div className="flex items-start gap-4 flex-1">
+                  {/* Company Logo */}
+                  <div className="flex-shrink-0">
+                    <div className="w-14 h-14 rounded-lg bg-white dark:bg-gray-700/50 shadow-md border border-gray-200/50 dark:border-gray-600/50 flex items-center justify-center p-2.5">
+                      {job.companyLogo ? (
+                        <img 
+                          src={job.companyLogo} 
+                          alt={`${job.company} logo`}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            const fallback = document.createElement('div');
+                            fallback.className = 'w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl';
+                            fallback.textContent = job.company[0];
+                            e.currentTarget.parentElement!.replaceChild(fallback, e.currentTarget);
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                          {job.company[0]}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{job.location}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Briefcase className="w-4 h-4" />
-                          <span>{job.type}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={cn(
-                      "px-3 py-1 rounded-full text-sm font-bold",
-                      getMatchScoreColor(job.matchScore)
-                    )}>
-                      {job.matchScore}% Match
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
-                    {job.salary && (
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4" />
-                        <span>{job.salary}</span>
+                  {/* Job Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1.5 group-hover:text-blue-600 transition-colors duration-300">
+                          {job.title}
+                        </h3>
+                        <div className="flex items-center gap-1 mb-2">
+                          <span className="text-base font-semibold text-gray-800 dark:text-gray-200">{job.company}</span>
+                          <div className="w-1 h-1 bg-gray-400 rounded-full mx-1.5"></div>
+                          <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                            <MapPin className="w-3.5 h-3.5" />
+                            <span className="text-sm">{job.location}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          <div className="flex items-center gap-1">
+                            <Briefcase className="w-3.5 h-3.5" />
+                            <span>{job.type}</span>
+                          </div>
+                          {job.salary && (
+                            <div className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+                              <DollarSign className="w-3.5 h-3.5" />
+                              <span>{job.salary}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Posted {job.posted}</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>Posted {job.posted}</span>
+
+                      {/* Match Score Badge */}
+                      <div className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm",
+                        getMatchScoreColor(job.matchScore)
+                      )}>
+                        {job.matchScore}% Match
+                      </div>
                     </div>
-                  </div>
 
-                  <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                    {job.description}
-                  </p>
+                    <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 leading-relaxed text-sm">
+                      {job.description}
+                    </p>
 
-                  <div className="flex flex-wrap gap-2">
-                    {job.requirements.slice(0, 4).map((req, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full"
-                      >
-                        {req}
-                      </span>
-                    ))}
-                    {job.requirements.length > 4 && (
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs rounded-full">
-                        +{job.requirements.length - 4} more
-                      </span>
-                    )}
+                    {/* Skills Tags */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {job.requirements.slice(0, 5).map((req, i) => (
+                        <span
+                          key={i}
+                          className="px-2.5 py-1 bg-blue-50/80 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs rounded-md border border-blue-200/50 dark:border-blue-700/30 font-medium"
+                        >
+                          {req}
+                        </span>
+                      ))}
+                      {job.requirements.length > 5 && (
+                        <span className="px-2.5 py-1 bg-gray-100/80 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 text-xs rounded-md">
+                          +{job.requirements.length - 5} more
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:min-w-[200px]">
-                  <Button
+                {/* Right Section - Action Buttons */}
+                <div className="flex xl:flex-col gap-2 xl:min-w-[220px]">
+                  <button
                     onClick={() => handleGenerateResume(job)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 font-semibold"
+                    className={cn(
+                      "group/btn flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium text-white transition-all duration-300",
+                      "bg-gradient-to-r from-blue-500/90 to-purple-500/90 hover:from-blue-600 hover:to-purple-600",
+                      "shadow-md hover:shadow-lg hover:scale-[1.02] transform",
+                      "border border-blue-200/20 hover:border-blue-300/30"
+                    )}
                   >
-                    <Target className="w-4 h-4 mr-2" />
-                    Generate Curated Resume
-                  </Button>
-                  <Button
+                    <Target className="w-4 h-4 group-hover/btn:rotate-12 transition-transform duration-300" />
+                    <span className="text-xs xl:text-sm">Generate Curated Resume</span>
+                  </button>
+                  
+                  <button
                     onClick={() => handleApplyNow(job.linkedinUrl)}
-                    className="bg-[#0077B5] hover:bg-[#005885] text-white px-6 py-3 font-semibold"
+                    className={cn(
+                      "group/btn flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-300",
+                      "bg-[#0077B5]/90 hover:bg-[#0077B5] text-white",
+                      "shadow-md hover:shadow-lg hover:scale-[1.02] transform",
+                      "border border-[#0077B5]/20 hover:border-[#0077B5]/40"
+                    )}
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Apply Now on LinkedIn
-                  </Button>
+                    <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform duration-300" />
+                    <span className="text-xs xl:text-sm">Apply on LinkedIn</span>
+                  </button>
                 </div>
               </div>
+
+              {/* Hover Glow Effect */}
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/3 to-purple-500/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </motion.div>
           ))}
         </div>
