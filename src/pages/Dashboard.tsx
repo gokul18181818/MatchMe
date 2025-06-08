@@ -109,25 +109,9 @@ const Dashboard: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Welcome back, {firstName}! 👋
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600 dark:text-gray-400">
             Here's what's happening with your resume optimization journey
           </p>
-          
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap gap-4">
-            <Link to="/analyze">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 text-lg font-semibold">
-                <Zap className="w-5 h-5 mr-2" />
-                Tailor Resume for Job
-              </Button>
-            </Link>
-            <Link to="/history">
-              <Button className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 px-6 py-3">
-                <FileText className="w-4 h-4 mr-2" />
-                View Applications
-              </Button>
-            </Link>
-          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -223,42 +207,7 @@ const Dashboard: React.FC = () => {
               )}
             </div>
 
-            {/* Quick Actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className={cn(
-                "p-6 rounded-xl border",
-                "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
-                "border-gray-200 dark:border-gray-700"
-              )}
-            >
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-blue-500" />
-                Quick Actions
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link to="/analyze" className="w-full">
-                  <Button className="w-full justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 py-3">
-                    <FileText className="w-4 h-4 mr-2" />
-                    New Analysis
-                  </Button>
-                </Link>
-                <Link to="/history" className="w-full">
-                  <Button className="w-full justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 py-3">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    View History
-                  </Button>
-                </Link>
-                <Link to="/settings" className="w-full">
-                  <Button className="w-full justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 py-3">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+
           </div>
 
           {/* Right Column - Subscription Info */}
@@ -294,6 +243,67 @@ const Dashboard: React.FC = () => {
               <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
                 Manage Subscription
               </Button>
+            </motion.div>
+
+            {/* Additional Quick Actions */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className={cn(
+                "p-6 rounded-xl border",
+                "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+                "border-gray-200 dark:border-gray-700"
+              )}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Zap className="w-5 h-5 text-purple-500" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <Link to="/analyze" className="block">
+                  <button className="w-full text-left px-4 py-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30 transition-all duration-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">Tailor Resume</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Optimize for new job</p>
+                      </div>
+                    </div>
+                  </button>
+                </Link>
+                
+                <Link to="/job-recommendations" className="block">
+                  <button className="w-full text-left px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                        <Target className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">Browse Jobs</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Find new opportunities</p>
+                      </div>
+                    </div>
+                  </button>
+                </Link>
+                
+                <Link to="/history" className="block">
+                  <button className="w-full text-left px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                        <BarChart3 className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">View History</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Check past analyses</p>
+                      </div>
+                    </div>
+                  </button>
+                </Link>
+              </div>
             </motion.div>
           </div>
         </div>

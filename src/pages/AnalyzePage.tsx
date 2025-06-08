@@ -221,7 +221,7 @@ const AnalyzePage: React.FC = () => {
               )}
             >
               <h3 className="text-lg font-semibold text-green-900 dark:text-green-100 mb-3">
-                ✅ Demo Job Data Generated Successfully
+                ✅ Job Data Extracted Successfully
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
@@ -252,7 +252,7 @@ const AnalyzePage: React.FC = () => {
               )}
               <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  📝 Demo Mode: This is sample data for demonstration. In production, we'd extract real job details from the LinkedIn URL.
+                  📝 Real Data: Job details extracted directly from the LinkedIn posting. Only LinkedIn job URLs are supported.
                 </p>
               </div>
             </motion.div>

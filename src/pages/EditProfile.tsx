@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useFormContext, type ProfileData } from '../contexts/FormContext';
+import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 import PageLayout from '../components/PageLayout';
 import Button from '../components/Button';
@@ -22,7 +23,13 @@ import Button from '../components/Button';
 const EditProfile: React.FC = () => {
   const { theme } = useTheme();
   const { profileData, updateProfileData } = useFormContext();
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Get user data with fallbacks
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || '';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U';
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     updateProfileData(field, value);
@@ -141,9 +148,15 @@ const EditProfile: React.FC = () => {
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">Profile Picture</h3>
           
           <div className="flex flex-col items-center">
+            {/* User Info Display */}
+            <div className="text-center mb-4">
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-white">{displayName}</h4>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">{userEmail}</p>
+            </div>
+            
             <div className="relative mb-6">
               <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-4xl font-bold text-white">
-                JS
+                {initials}
               </div>
               <button
                 onClick={handleAvatarUpload}
@@ -264,35 +277,6 @@ const EditProfile: React.FC = () => {
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-            </div>
-            
-            {/* Quick Navigation */}
-            <div className={cn(
-              "flex flex-wrap gap-2 p-4 rounded-lg border",
-              "bg-zinc-50/50 dark:bg-zinc-800/30",
-              "border-zinc-200 dark:border-zinc-700"
-            )}>
-              <span className="text-sm text-zinc-600 dark:text-zinc-400 mr-2">Quick actions:</span>
-              <button
-                onClick={handleViewDashboard}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
-              >
-                View Dashboard
-              </button>
-              <span className="text-zinc-400">•</span>
-              <button
-                onClick={() => navigate('/job-recommendations')}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
-              >
-                Browse Jobs
-              </button>
-              <span className="text-zinc-400">•</span>
-              <button
-                onClick={() => navigate('/analyze')}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
-              >
-                Tailor Resume
-              </button>
             </div>
           </motion.div>
         </div>

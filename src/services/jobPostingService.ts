@@ -369,113 +369,273 @@ export const deleteJobPosting = async (id: string): Promise<void> => {
   }
 };
 
-// LinkedIn Job Scraping with OpenAI
+// Validate LinkedIn job URL strictly
+const isValidLinkedInJobUrl = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url);
+    const isLinkedIn = urlObj.hostname.includes('linkedin.com');
+    const hasJobsPath = urlObj.pathname.includes('/jobs/view/');
+    const hasJobId = /\/jobs\/view\/\d+/.test(urlObj.pathname);
+    
+    return isLinkedIn && hasJobsPath && hasJobId;
+  } catch {
+    return false;
+  }
+};
+
+// Extract job data from LinkedIn's HTML structure
+const extractJobData = (document: Document, jobUrl: string): ScrapedJobData => {
+  // Extract job title
+  const titleSelectors = [
+    '.jobs-unified-top-card__job-title h1',
+    '.jobs-unified-top-card__job-title a',
+    'h1[data-test-id="job-title"]',
+    '.job-details-jobs-unified-top-card__job-title h1'
+  ];
+  
+  let title = '';
+  for (const selector of titleSelectors) {
+    const element = document.querySelector(selector);
+    if (element?.textContent?.trim()) {
+      title = element.textContent.trim();
+      break;
+    }
+  }
+
+  // Extract company name
+  const companySelectors = [
+    '.jobs-unified-top-card__company-name a',
+    '.jobs-unified-top-card__company-name',
+    'a[data-test-id="job-poster-name"]',
+    '.job-details-jobs-unified-top-card__company-name a'
+  ];
+  
+  let company = '';
+  for (const selector of companySelectors) {
+    const element = document.querySelector(selector);
+    if (element?.textContent?.trim()) {
+      company = element.textContent.trim();
+      break;
+    }
+  }
+
+  // Extract location
+  const locationSelectors = [
+    '.jobs-unified-top-card__bullet',
+    '.jobs-unified-top-card__workplace-type',
+    '[data-test-id="job-location"]',
+    '.job-details-jobs-unified-top-card__primary-description-container .tvm__text'
+  ];
+  
+  let location = '';
+  for (const selector of locationSelectors) {
+    const element = document.querySelector(selector);
+    if (element?.textContent?.trim()) {
+      location = element.textContent.trim();
+      break;
+    }
+  }
+
+  // Extract job description
+  const descriptionSelectors = [
+    '.jobs-description__content .jobs-box__html-content',
+    '.jobs-description-content__text',
+    '.job-view-layout .jobs-box__html-content',
+    '.jobs-description .jobs-box__html-content'
+  ];
+  
+  let description = '';
+  for (const selector of descriptionSelectors) {
+    const element = document.querySelector(selector);
+    if (element?.textContent?.trim()) {
+      description = element.textContent.trim();
+      break;
+    }
+  }
+
+  // Extract employment type and experience level
+  const criteriaElements = document.querySelectorAll('.jobs-unified-top-card__job-insight span, .job-criteria__text, .job-details-preferences__criteria span');
+  let employment_type = 'Full-time';
+  let experience_level = 'Mid-Senior level';
+  let remote_type = 'On-site';
+
+  criteriaElements.forEach(el => {
+    const text = el.textContent?.trim().toLowerCase() || '';
+    if (text.includes('full-time') || text.includes('part-time') || text.includes('contract') || text.includes('internship')) {
+      employment_type = text.charAt(0).toUpperCase() + text.slice(1);
+    }
+    if (text.includes('entry') || text.includes('associate') || text.includes('mid') || text.includes('senior') || text.includes('executive') || text.includes('director')) {
+      experience_level = text.charAt(0).toUpperCase() + text.slice(1);
+    }
+    if (text.includes('remote') || text.includes('hybrid') || text.includes('on-site')) {
+      remote_type = text.charAt(0).toUpperCase() + text.slice(1);
+    }
+  });
+
+  // Extract requirements and skills from description
+  const requirements: string[] = [];
+  const benefits: string[] = [];
+  
+  if (description) {
+    const descText = description.toLowerCase();
+    
+    // Common technical skills
+    const skillPatterns = [
+      { pattern: /javascript|js(?![a-z])/g, skill: 'JavaScript' },
+      { pattern: /typescript|ts(?![a-z])/g, skill: 'TypeScript' },
+      { pattern: /python/g, skill: 'Python' },
+      { pattern: /java(?![a-z])/g, skill: 'Java' },
+      { pattern: /react/g, skill: 'React' },
+      { pattern: /node\.?js/g, skill: 'Node.js' },
+      { pattern: /angular/g, skill: 'Angular' },
+      { pattern: /vue\.?js|vue(?![a-z])/g, skill: 'Vue.js' },
+      { pattern: /sql/g, skill: 'SQL' },
+      { pattern: /aws|amazon web services/g, skill: 'AWS' },
+      { pattern: /docker/g, skill: 'Docker' },
+      { pattern: /kubernetes|k8s/g, skill: 'Kubernetes' },
+      { pattern: /git(?![a-z])/g, skill: 'Git' },
+      { pattern: /machine learning|ml(?![a-z])/g, skill: 'Machine Learning' },
+      { pattern: /ai|artificial intelligence/g, skill: 'Artificial Intelligence' }
+    ];
+
+    skillPatterns.forEach(({ pattern, skill }) => {
+      if (pattern.test(descText) && !requirements.includes(skill)) {
+        requirements.push(skill);
+      }
+    });
+
+    // Extract benefits
+    const benefitPatterns = [
+      { pattern: /health insurance|medical/g, benefit: 'Health insurance' },
+      { pattern: /dental/g, benefit: 'Dental insurance' },
+      { pattern: /vision/g, benefit: 'Vision insurance' },
+      { pattern: /401k|retirement/g, benefit: '401(k)' },
+      { pattern: /pto|paid time off|vacation/g, benefit: 'Paid time off' },
+      { pattern: /remote|work from home/g, benefit: 'Remote work options' },
+      { pattern: /flexible|flex time/g, benefit: 'Flexible schedule' },
+      { pattern: /equity|stock options/g, benefit: 'Equity/Stock options' }
+    ];
+
+    benefitPatterns.forEach(({ pattern, benefit }) => {
+      if (pattern.test(descText) && !benefits.includes(benefit)) {
+        benefits.push(benefit);
+      }
+    });
+  }
+
+  // Extract salary if available (LinkedIn sometimes shows this)
+  let salary_range = '';
+  const salaryElement = document.querySelector('.job-details-preferences__salary, .jobs-unified-top-card__job-insight--salary');
+  if (salaryElement?.textContent) {
+    salary_range = salaryElement.textContent.trim();
+  }
+
+  return {
+    title: title || 'Software Engineer',
+    company: company || 'Company',
+    location: location || 'Location not specified',
+    description: description || 'Job description not available',
+    requirements,
+    benefits,
+    employment_type,
+    experience_level,
+    remote_type,
+    posted_date: new Date().toISOString().split('T')[0],
+    salary_range: salary_range || undefined,
+    job_url: jobUrl
+  };
+};
+
+// Real LinkedIn Job Scraping Implementation
 export const scrapeLinkedInJob = async (linkedinUrl: string): Promise<ScrapedJobData> => {
   try {
-    // Validate LinkedIn URL
-    if (!linkedinUrl.includes('linkedin.com/jobs/view/')) {
-      throw new Error('Please provide a valid LinkedIn job posting URL');
+    // Strict validation - only LinkedIn job posting URLs allowed
+    if (!isValidLinkedInJobUrl(linkedinUrl)) {
+      throw new Error('Invalid URL. Please provide a valid LinkedIn job posting URL (e.g., https://www.linkedin.com/jobs/view/1234567890). Other job sites are not supported.');
     }
 
-    // For now, provide a realistic fallback since OpenAI can't actually scrape URLs
-    // In a real production app, you'd use a web scraping service or browser automation
-    
-    console.log('LinkedIn URL provided:', linkedinUrl);
-    
-    // Extract job ID for better mock data
-    const jobIdMatch = linkedinUrl.match(/jobs\/view\/(\d+)/);
-    const jobId = jobIdMatch ? jobIdMatch[1] : 'unknown';
-    
-    // Provide realistic mock data based on common LinkedIn job patterns
-    const mockJobData: ScrapedJobData = {
-      title: 'Software Engineer',
-      company: 'Tech Company',
-      location: 'San Francisco, CA',
-      description: `We are looking for a talented Software Engineer to join our growing team. You will work on cutting-edge projects and collaborate with a team of experienced developers.
+    console.log('Attempting to scrape LinkedIn job:', linkedinUrl);
 
-Key Responsibilities:
-• Design and develop high-quality software solutions
-• Collaborate with cross-functional teams to deliver products
-• Write clean, maintainable, and efficient code
-• Participate in code reviews and technical discussions
-• Contribute to architectural decisions and technical strategy
+    // Method 1: Try using a CORS proxy to fetch the LinkedIn page
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    const proxyUrl = CORS_PROXY + encodeURIComponent(linkedinUrl);
 
-Requirements:
-• Bachelor's degree in Computer Science or related field
-• 3+ years of software development experience
-• Proficiency in JavaScript, Python, or Java
-• Experience with modern web frameworks (React, Angular, Vue)
-• Strong understanding of databases and APIs
-• Excellent problem-solving and communication skills
+    try {
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
+      });
 
-Benefits:
-• Competitive salary and equity package
-• Comprehensive health, dental, and vision insurance
-• Flexible work arrangements and unlimited PTO
-• Professional development opportunities
-• Modern office with latest technology`,
-      requirements: [
-        'Bachelor\'s degree in Computer Science',
-        '3+ years of software development experience', 
-        'Proficiency in JavaScript, Python, or Java',
-        'Experience with modern web frameworks',
-        'Strong understanding of databases and APIs',
-        'Excellent problem-solving skills',
-        'Strong communication skills'
-      ],
-      benefits: [
-        'Competitive salary and equity package',
-        'Comprehensive health, dental, and vision insurance', 
-        'Flexible work arrangements',
-        'Unlimited PTO',
-        'Professional development opportunities',
-        'Modern office with latest technology'
-      ],
-      employment_type: 'Full-time',
-      experience_level: 'Mid level',
-      remote_type: 'Hybrid',
-      posted_date: new Date().toISOString().split('T')[0],
-      application_deadline: undefined,
-      salary_range: '$120,000 - $180,000',
-      job_url: linkedinUrl
-    };
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-    // Removed artificial delay for faster execution
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    console.log('Mock job data generated successfully');
-    return mockJobData;
+      const html = await response.text();
+      
+      // Parse HTML content
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      const scrapedData = extractJobData(doc, linkedinUrl);
+      
+      // Validate that we got meaningful data
+      if (!scrapedData.title || (scrapedData.title === 'Software Engineer' && scrapedData.company === 'Company')) {
+        throw new Error('Could not extract meaningful job data from LinkedIn page');
+      }
+
+      console.log('Successfully scraped LinkedIn job data:', scrapedData);
+      return scrapedData;
+
+    } catch (proxyError) {
+      console.error('CORS proxy method failed:', proxyError);
+      
+      // Fallback: Use a web scraping service (requires API key)
+      const SCRAPING_API_KEY = import.meta.env.VITE_SCRAPING_API_KEY;
+      
+      if (SCRAPING_API_KEY) {
+        try {
+          console.log('Trying web scraping service...');
+          
+          const scrapingResponse = await fetch('https://api.scraperapi.com/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              api_key: SCRAPING_API_KEY,
+              url: linkedinUrl,
+              render: true,
+              country_code: 'us'
+            })
+          });
+
+          if (!scrapingResponse.ok) {
+            throw new Error(`Scraping service error: ${scrapingResponse.status}`);
+          }
+
+          const html = await scrapingResponse.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          const scrapedData = extractJobData(doc, linkedinUrl);
+          console.log('Successfully scraped via scraping service:', scrapedData);
+          return scrapedData;
+          
+        } catch (serviceError) {
+          console.error('Web scraping service failed:', serviceError);
+        }
+      }
+      
+      // Final fallback: Return error
+      throw new Error('Unable to scrape LinkedIn job data. LinkedIn may be blocking automated access. Please try again later or contact support.');
+    }
 
   } catch (error) {
-    console.error('LinkedIn scraping error:', error);
-    
-    // Fallback: Extract basic info from URL and provide mock data
-    const fallbackData: ScrapedJobData = {
-      title: 'Software Engineer',
-      company: 'Company',
-      location: 'United States',
-      description: `This position was found at: ${linkedinUrl}\n\nJob details:\n• Software development role\n• Full-time position\n• Competitive compensation\n• Growth opportunities\n\nPlease visit the original LinkedIn posting for complete details.`,
-      requirements: [
-        'Programming experience',
-        'Problem-solving skills', 
-        'Team collaboration',
-        'Communication skills'
-      ],
-      benefits: [
-        'Competitive salary',
-        'Health benefits',
-        'Professional development'
-      ],
-      employment_type: 'Full-time',
-      experience_level: 'Mid level',
-      remote_type: 'Hybrid',
-      posted_date: new Date().toISOString().split('T')[0],
-      application_deadline: undefined,
-      salary_range: undefined,
-      job_url: linkedinUrl
-    };
-
-    throw new Error(`Unable to extract job details automatically. Using basic information instead.`);
+    console.error('LinkedIn scraping failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new Error(`Failed to scrape LinkedIn job: ${errorMessage}`);
   }
 };
 
